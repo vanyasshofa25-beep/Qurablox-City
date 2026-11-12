@@ -19200,7 +19200,16 @@ module.exports = QRCode;
           return json && json.role ? String(json.role) : null;
         } catch (e) { return null; }
       }
+      const SHEETS_URL_RE = /^https:\/\/script\.google\.com\/(a\/macros\/[^/]+|macros)\/s\/[A-Za-z0-9_-]{20,}\/exec$/;
       function validate(cfg) {
+        if (cfg && cfg.type === "sheets") {
+          const url = String(cfg.url || "").trim().replace(/\?.*$/, "");
+          const errs = [];
+          if (!SHEETS_URL_RE.test(url)) errs.push("Alamat Web App Google Sheets harus berbentuk https://script.google.com/macros/s/…/exec (salin dari Deploy → Web app).");
+          const v = String(cfg.verifyPageUrl || "").trim();
+          if (v && !/^https?:\/\//i.test(v)) errs.push("Alamat halaman verifikasi harus diawali https://");
+          return { ok: errs.length === 0, errors: errs, value: { type: "sheets", url, verifyPageUrl: v } };
+        }
         const errs = [];
         const url = String(cfg.url || "").trim().replace(/\/+$/, "");
         const key = String(cfg.anonKey || "").trim();
@@ -19209,12 +19218,13 @@ module.exports = QRCode;
         else if (!(key.split(".").length === 3 || /^sb_publishable_/i.test(key))) errs.push("Anon/publishable key tidak dikenali.");
         const v = String(cfg.verifyPageUrl || "").trim();
         if (v && !/^https?:\/\//i.test(v)) errs.push("Alamat halaman verifikasi harus diawali https://");
-        return { ok: errs.length === 0, errors: errs, value: { url, anonKey: key, verifyPageUrl: v } };
+        return { ok: errs.length === 0, errors: errs, value: { type: "supabase", url, anonKey: key, verifyPageUrl: v } };
       }
       function get() {
+        const usable = c => c && c.url && (c.type === "sheets" || c.anonKey);
         const local = read();
-        if (local && local.url && local.anonKey) return Object.assign({ source: "perangkat" }, local);
-        if (fileConfig && fileConfig.url && fileConfig.anonKey) return Object.assign({ source: "file qurablox-backend.json" }, fileConfig);
+        if (usable(local)) return Object.assign({ type: "supabase", source: "perangkat" }, local);
+        if (usable(fileConfig)) return Object.assign({ type: "supabase", source: "file qurablox-backend.json" }, fileConfig);
         return null;
       }
       function save(cfg) {
@@ -19239,10 +19249,14 @@ module.exports = QRCode;
       }
       function getVerifyPageUrl() {
         const c = get();
-        if (c && c.verifyPageUrl) return c.verifyPageUrl;
+        if (!c) return "";
+        if (c.verifyPageUrl) return c.verifyPageUrl;
+        // Default: halaman ini sendiri bila sudah di-hosting dengan https (mis. GitHub Pages)
+        if (typeof location !== "undefined" && location.protocol === "https:") return location.origin + location.pathname;
         return "";
       }
-      return { get, save, clear, validate, isConfigured: () => !!get(), getVerifyPageUrl, loadDeploymentFile, decodeJwtRole };
+      function isSheets() { const c = get(); return !!(c && c.type === "sheets"); }
+      return { get, save, clear, validate, isConfigured: () => !!get(), isSheets, getVerifyPageUrl, loadDeploymentFile, decodeJwtRole };
     })();
 
     const BackendClient = (() => {
@@ -19257,7 +19271,11 @@ module.exports = QRCode;
         ASSIGNMENT_FORBIDDEN: "Penugasan tidak tersedia untuk kelas ini.",
         SCHOOL_NOT_FOUND: "Kode sekolah tidak ditemukan.",
         NETWORK: "Tidak dapat menghubungi server (periksa internet).",
-        NOT_CONFIGURED: "Backend online belum dikonfigurasi."
+        NOT_CONFIGURED: "Backend online belum dikonfigurasi.",
+        SHEETS_ACCESS: "Google Sheets tidak bisa diakses. Pastikan Web App di-deploy dengan akses 'Anyone / Siapa saja' dan alamatnya diakhiri /exec.",
+        NOT_SUPPORTED_SHEETS: "Fitur ini hanya untuk mode Supabase. Pada mode Google Sheets, kelola kelas & siswa langsung di Google Sheet.",
+        INVALID_ATTEMPT: "Data hasil tidak valid.",
+        SERVER_ERROR: "Server sedang bermasalah, coba lagi nanti."
       };
       function errText(code, fallback) { return ERROR_TEXT[code] || fallback || code; }
 
@@ -19302,7 +19320,39 @@ module.exports = QRCode;
         return `Bearer ${s.access_token}`;
       }
 
+      // ---- Mode Google Sheets (Apps Script Web App): satu alamat, aksi dalam body JSON ----
+      async function sheetsPost(payload, timeout) {
+        const cfg = BackendConfig.get();
+        const ctl = typeof AbortController !== "undefined" ? new AbortController() : null;
+        const timer = ctl ? setTimeout(() => ctl.abort(), timeout || 25000) : null;
+        let res, text;
+        try {
+          // text/plain = permintaan sederhana (tanpa preflight CORS) yang diterima Apps Script
+          res = await fetch(cfg.url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload), redirect: "follow", signal: ctl ? ctl.signal : undefined });
+          text = await res.text();
+        } catch (netErr) {
+          const e = new Error(ERROR_TEXT.NETWORK); e.code = "NETWORK"; e.transient = true; throw e;
+        } finally { if (timer) clearTimeout(timer); }
+        let json = null;
+        try { json = JSON.parse(text); } catch (e) {
+          const err = new Error(ERROR_TEXT.SHEETS_ACCESS); err.code = "SHEETS_ACCESS"; throw err;
+        }
+        if (json && json.ok === false && json.error) { const e = new Error(errText(json.error)); e.code = json.error; e.transient = json.error === "SERVER_ERROR"; e.payload = json; throw e; }
+        return json;
+      }
+      function packFromAssignment(aid) { const m = /^sheet:[^:]*:(.+)$/.exec(String(aid || "")); return m ? m[1] : ""; }
+      async function sheetsRpc(fn, a, o) {
+        const t = o && o.timeout;
+        if (fn === "verify_certificate") return sheetsPost({ action: "verify", number: a.p_number }, t);
+        if (fn === "student_join") return sheetsPost({ action: "join", classCode: a.p_class_code, name: a.p_name, pin: a.p_pin }, t);
+        if (fn === "student_submit_attempt") return sheetsPost({ action: "submitAttempt", token: a.p_token, attempt: a.p_attempt }, t);
+        if (fn === "student_report_materi") return sheetsPost({ action: "reportMateri", token: a.p_token, packId: packFromAssignment(a.p_assignment_id), buildingId: a.p_building_id, readAt: a.p_read_at }, t);
+        if (fn === "student_claim_certificate") return sheetsPost({ action: "claimCertificate", token: a.p_token, achievementId: a.p_client_achievement_id, number: a.p_number, client: a.p_client }, t);
+        const e = new Error(ERROR_TEXT.NOT_SUPPORTED_SHEETS); e.code = "NOT_SUPPORTED_SHEETS"; throw e;
+      }
+
       async function rpc(fn, args, opts) {
+        if (BackendConfig.isSheets()) return sheetsRpc(fn, args || {}, opts);
         const o = opts || {};
         const headers = {};
         if (o.teacher) {
@@ -19340,6 +19390,10 @@ module.exports = QRCode;
       function studentToken(studentId) { return getStudentTokens()[studentId] || null; }
 
       async function testConnection() {
+        if (BackendConfig.isSheets()) {
+          const p = await sheetsPost({ action: "ping" }, 15000);
+          return !!(p && p.app === "QURABLOX_SHEETS");
+        }
         const r = await rpc("verify_certificate", { p_number: "QBC-0000-X-0000-00000" }, { timeout: 12000 });
         return !!(r && r.found === false);
       }
@@ -19539,6 +19593,11 @@ module.exports = QRCode;
         if (!player || !player.online || !player.online.studentId) return null;
         const d = StorageManager.peekData();
         const pack = d.platform && d.platform.packs ? d.platform.packs[d.platform.activePackId] : null;
+        if (BackendConfig.isSheets()) {
+          if (!pack || player.online.mode !== "sheets") return null;
+          return { studentId: player.online.studentId, assignmentId: `sheet:${player.online.classId}:${pack.id}`, packId: pack.id };
+        }
+        if (player.online.mode === "sheets") return null;
         if (!pack || !pack.online || !pack.online.assignmentId) return null;
         if (pack.online.classId && player.online.classId && pack.online.classId !== player.online.classId) return null;
         return { studentId: player.online.studentId, assignmentId: pack.online.assignmentId, packId: pack.id };
@@ -19606,9 +19665,19 @@ module.exports = QRCode;
           if (pp && pp.materiRead) Object.keys(pp.materiRead).forEach(bId => onMateriRead(idx, bId));
           const quests = ContentManager.getQuestList().filter(q => q.category === "main");
           const qp = p.questProgress || {};
+          const snap = rec.configSnapshot || {};
+          const crit = (snap.criteria || []).filter(c => c.enabled);
+          const passCrit = crit.find(c => c.type === "exams_passed" || c.type === "buildings_completed");
+          const scoreCrit = crit.find(c => c.type === "min_score");
+          const allIds = ((rec.summary && rec.summary.buildings) || []).map(b => b.id);
+          const pick = (c) => (c && c.params && Array.isArray(c.params.buildingIds) && c.params.buildingIds.length) ? c.params.buildingIds.filter(id => allIds.includes(id)) : allIds;
           enqueue("certificate", rec.id, ctx, {
             assignment_id: ctx.assignmentId, client_achievement_id: rec.id, number: rec.certificate.number,
-            client: { xp: Number(p.xp) || 0, quests_total: quests.length, quests_done: quests.filter(q => qp[q.id] && (qp[q.id].completed || qp[q.id].claimed)).length }
+            client: {
+              xp: Number(p.xp) || 0, quests_total: quests.length, quests_done: quests.filter(q => qp[q.id] && (qp[q.id].completed || qp[q.id].claimed)).length,
+              pack_id: ctx.packId, package_title: rec.packTitle || "", award_title: (rec.award && rec.award.title) || "",
+              check: { buildingIds: passCrit ? pick(passCrit) : pick(scoreCrit), requirePassAll: !!passCrit, minScore: scoreCrit ? scoreCrit.params.minScore : null, scope: scoreCrit ? scoreCrit.params.scope : "average" }
+            }
           });
           CompletionEngine.updateAchievement(rec.id, { syncStatus: STATUS.PENDING });
         } catch (e) { console.warn("enqueueAchievement", e); }
@@ -20906,6 +20975,9 @@ module.exports = QRCode;
     })();
     if (typeof window !== "undefined") window.TeacherFinale = TeacherFinale;
 
+    /* Skrip Apps Script untuk mode Google Sheets (disalin guru dari Teacher Studio) */
+    const QB_SHEETS_SCRIPT = "/**\n * QURABLOX CITY — Mode Google Sheets (Apps Script)\n * Versi 1.0 • Tempel seluruh isi file ini di Extensions → Apps Script pada Google Sheet Anda.\n *\n * Tab yang dibuat otomatis (jalankan fungsi siapkanSheet sekali):\n *   Kelas      : daftar kelas + kode kelas (diisi guru)\n *   Siswa      : daftar siswa per kode kelas, PIN opsional (diisi guru)\n *   Hasil      : nilai latihan & ujian yang dikirim game (otomatis)\n *   Materi     : catatan materi yang sudah dibaca (otomatis)\n *   Sertifikat : sertifikat Grand Finale yang dicatat (otomatis; ubah status menjadi DICABUT untuk mencabut)\n *   Sesi, Log  : data teknis (jangan diubah)\n *\n * Keamanan: game hanya bisa menulis lewat kode kelas + nama terdaftar (+PIN). Isi Sheet hanya bisa\n * dilihat pemilik Sheet. Nilai dihitung di perangkat siswa lalu dicatat di sini.\n */\nvar QB_VERSION = '1.0';\nvar QB_SHEETS = {\n  Kelas: ['kode_kelas', 'nama_kelas', 'aktif', 'catatan'],\n  Siswa: ['kode_kelas', 'nama_siswa', 'pin', 'aktif', 'student_id'],\n  Hasil: ['waktu_diterima', 'attempt_id', 'kode_kelas', 'nama_siswa', 'student_id', 'paket', 'gedung', 'mode', 'nilai', 'benar', 'total', 'kkm', 'status', 'selesai_pada', 'durasi_detik', 'jawaban'],\n  Materi: ['waktu_diterima', 'kunci', 'kode_kelas', 'nama_siswa', 'student_id', 'paket', 'gedung', 'dibaca_pada'],\n  Sertifikat: ['nomor', 'status', 'nama_siswa', 'kode_kelas', 'nama_kelas', 'paket', 'gelar', 'diterbitkan', 'student_id', 'id_pencapaian', 'catatan'],\n  Sesi: ['token_hash', 'student_id', 'kode_kelas', 'nama_siswa', 'dibuat', 'kedaluwarsa'],\n  Log: ['waktu', 'aksi', 'hasil', 'detail']\n};\n\n/** Jalankan SEKALI dari editor (tombol Run) untuk membuat semua tab. */\nfunction siapkanSheet() {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  Object.keys(QB_SHEETS).forEach(function (name) { qbSheet_(ss, name); });\n  var kelas = ss.getSheetByName('Kelas');\n  if (kelas.getLastRow() < 2) kelas.appendRow(['IX4TAJWID', 'IX-4', 'YA', 'Contoh — ganti dengan kelas Anda']);\n  var siswa = ss.getSheetByName('Siswa');\n  if (siswa.getLastRow() < 2) {\n    siswa.appendRow(['IX4TAJWID', 'Ahmad Fauzan', '', 'YA', '']);\n    siswa.appendRow(['IX4TAJWID', 'Siti Aisyah', '4321', 'YA', '']);\n  }\n  return 'Tab Qurablox siap. Isi tab Kelas dan Siswa, lalu Deploy sebagai Web app.';\n}\n\nfunction qbSheet_(ss, name) {\n  var sh = ss.getSheetByName(name);\n  if (!sh) {\n    sh = ss.insertSheet(name);\n    sh.appendRow(QB_SHEETS[name]);\n    sh.setFrozenRows(1);\n  } else if (sh.getLastRow() === 0) {\n    sh.appendRow(QB_SHEETS[name]);\n    sh.setFrozenRows(1);\n  }\n  return sh;\n}\n\nfunction qbJson_(obj) {\n  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction qbKey_(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/\\s+/g, ' '); }\nfunction qbCode_(s) { return String(s == null ? '' : s).trim().toUpperCase(); }\nfunction qbYes_(v) { var t = String(v == null ? '' : v).trim().toUpperCase(); return t === '' || t === 'YA' || t === 'Y' || t === 'TRUE' || t === 'AKTIF' || v === true; }\nfunction qbNow_() { return new Date(); }\nfunction qbIso_(v) { var d = (v instanceof Date) ? v : new Date(v); return isNaN(d.getTime()) ? String(v || '') : d.toISOString(); }\n\nfunction qbSha_(text) {\n  var raw = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, text, Utilities.Charset.UTF_8);\n  // awalan h_ agar Google Sheets tidak pernah mengubah hash menjadi angka\n  return 'h_' + raw.map(function (b) { var v = (b < 0 ? b + 256 : b).toString(16); return v.length === 1 ? '0' + v : v; }).join('');\n}\n\nfunction qbRows_(sh) {\n  var last = sh.getLastRow();\n  if (last < 2) return [];\n  return sh.getRange(2, 1, last - 1, sh.getLastColumn()).getValues();\n}\n\nfunction qbLog_(ss, aksi, hasil, detail) {\n  try { qbSheet_(ss, 'Log').appendRow([qbNow_(), String(aksi || ''), String(hasil || ''), String(detail || '').slice(0, 300)]); } catch (e) {}\n}\n\nfunction doGet(e) {\n  var p = (e && e.parameter) || {};\n  try {\n    var ss = SpreadsheetApp.getActiveSpreadsheet();\n    if (p.action === 'verify') return qbJson_(qbVerify_(ss, p.number));\n    return qbJson_({ ok: true, app: 'QURABLOX_SHEETS', version: QB_VERSION });\n  } catch (err) {\n    return qbJson_({ ok: false, error: 'SERVER_ERROR', message: String(err) });\n  }\n}\n\nfunction doPost(e) {\n  var lock = LockService.getScriptLock();\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var body = {};\n  try {\n    body = JSON.parse((e && e.postData && e.postData.contents) || '{}');\n  } catch (err) {\n    return qbJson_({ ok: false, error: 'BAD_REQUEST' });\n  }\n  try {\n    lock.waitLock(20000);\n    Object.keys(QB_SHEETS).forEach(function (name) { qbSheet_(ss, name); });\n    var out;\n    switch (body.action) {\n      case 'ping': out = { ok: true, app: 'QURABLOX_SHEETS', version: QB_VERSION }; break;\n      case 'join': out = qbJoin_(ss, body); break;\n      case 'submitAttempt': out = qbSubmitAttempt_(ss, body); break;\n      case 'reportMateri': out = qbReportMateri_(ss, body); break;\n      case 'claimCertificate': out = qbClaimCertificate_(ss, body); break;\n      case 'verify': out = qbVerify_(ss, body.number); break;\n      default: out = { ok: false, error: 'UNKNOWN_ACTION' };\n    }\n    return qbJson_(out);\n  } catch (err) {\n    var code = String(err && err.message || err);\n    if (!/^[A-Z_]{6,}$/.test(code)) { qbLog_(ss, body.action, 'ERROR', code); code = 'SERVER_ERROR'; }\n    return qbJson_({ ok: false, error: code });\n  } finally {\n    try { lock.releaseLock(); } catch (e2) {}\n  }\n}\n\nfunction qbFindClass_(ss, code) {\n  var rows = qbRows_(ss.getSheetByName('Kelas'));\n  for (var i = 0; i < rows.length; i++) {\n    if (qbCode_(rows[i][0]) === code && code) return { name: String(rows[i][1] || code), active: qbYes_(rows[i][2]) };\n  }\n  return null;\n}\n\nfunction qbJoin_(ss, b) {\n  var code = qbCode_(b.classCode);\n  var cache = CacheService.getScriptCache();\n  var failKey = 'qbfail_' + code;\n  var fails = Number(cache.get(failKey) || 0);\n  if (fails >= 20) throw new Error('TOO_MANY_ATTEMPTS');\n  var cls = qbFindClass_(ss, code);\n  var siswa = ss.getSheetByName('Siswa');\n  var rows = qbRows_(siswa);\n  var key = qbKey_(b.name);\n  var found = -1;\n  for (var i = 0; i < rows.length; i++) {\n    if (qbCode_(rows[i][0]) === code && qbKey_(rows[i][1]) === key && qbYes_(rows[i][3])) { found = i; break; }\n  }\n  var pinCell = found >= 0 ? String(rows[found][2]).trim() : '';\n  var pinIn = String(b.pin == null ? '' : b.pin).trim();\n  var pinOk = found >= 0 && (pinCell === '' || pinCell === pinIn || (/^\\d+$/.test(pinIn) && pinCell !== '' && Number(pinCell) === Number(pinIn)));\n  if (!cls || !cls.active || found < 0 || !pinOk) {\n    cache.put(failKey, String(fails + 1), 900);\n    qbLog_(ss, 'join', 'GAGAL', code + ' / ' + key);\n    return { ok: false, error: 'JOIN_FAILED' };\n  }\n  var sid = String(rows[found][4] || '').trim();\n  if (!sid) { sid = Utilities.getUuid(); siswa.getRange(found + 2, 5).setValue(sid); }\n  var token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');\n  var exp = new Date(Date.now() + 120 * 24 * 3600 * 1000);\n  ss.getSheetByName('Sesi').appendRow([qbSha_(token), sid, code, String(rows[found][1]), qbNow_(), exp]);\n  qbLog_(ss, 'join', 'OK', code + ' / ' + rows[found][1]);\n  return { ok: true, token: token, student_id: sid, display_name: String(rows[found][1]), class_id: code, class_name: cls.name, grade_label: '', assignments: [] };\n}\n\nfunction qbAuth_(ss, token) {\n  if (!token || String(token).length < 32) throw new Error('TOKEN_INVALID');\n  var h = qbSha_(String(token));\n  var rows = qbRows_(ss.getSheetByName('Sesi'));\n  for (var i = rows.length - 1; i >= 0; i--) {\n    if (rows[i][0] === h) {\n      if (new Date(rows[i][5]).getTime() < Date.now()) throw new Error('TOKEN_INVALID');\n      var sid = rows[i][1], code = qbCode_(rows[i][2]);\n      var cls = qbFindClass_(ss, code);\n      var st = qbRows_(ss.getSheetByName('Siswa'));\n      for (var j = 0; j < st.length; j++) {\n        if (String(st[j][4]) === String(sid)) {\n          if (!qbYes_(st[j][3]) || !cls || !cls.active) throw new Error('TOKEN_INVALID');\n          return { studentId: String(sid), code: code, name: String(st[j][1]), className: cls.name };\n        }\n      }\n      throw new Error('TOKEN_INVALID');\n    }\n  }\n  throw new Error('TOKEN_INVALID');\n}\n\nfunction qbSubmitAttempt_(ss, b) {\n  var who = qbAuth_(ss, b.token);\n  var a = b.attempt || {};\n  var id = String(a.attempt_id || '');\n  if (id.length < 6 || id.length > 120) throw new Error('INVALID_ATTEMPT');\n  var sh = ss.getSheetByName('Hasil');\n  var rows = qbRows_(sh);\n  for (var i = 0; i < rows.length; i++) {\n    if (String(rows[i][1]) === id) {\n      if (String(rows[i][4]) !== who.studentId) throw new Error('ATTEMPT_CONFLICT');\n      return { ok: true, duplicate: true, attempt_id: id, server_score: Number(rows[i][8]) || 0, passed: rows[i][12] === 'LULUS', score_mismatch: false };\n    }\n  }\n  var answers = Array.isArray(a.answers) ? a.answers.slice(0, 500) : [];\n  var total = Math.max(answers.length, Number(a.total_questions) || 0);\n  var correct = answers.filter(function (x) { return x && x.is_correct; }).length;\n  var score = Math.max(0, Math.min(100, Math.round(Number(a.client_score) || 0)));\n  var meta = a.meta || {};\n  var kkm = Math.max(0, Math.min(100, Number(meta.kkm) || 75));\n  var challenge = a.mode === 'challenge';\n  var status = challenge ? (score >= kkm ? 'LULUS' : 'REMEDIAL') : 'LATIHAN';\n  var jawaban = answers.map(function (x, k) { return (k + 1) + '. ' + (x.chosen_text == null ? '(kosong)' : String(x.chosen_text)) + (x.is_correct ? ' ✓' : ' ✗'); }).join('\\n').slice(0, 45000);\n  sh.appendRow([qbNow_(), id, who.code, who.name, who.studentId, String(meta.packId || ''), String(a.building_id || ''), challenge ? 'Ujian' : 'Latihan', score, correct, total, kkm, status, String(a.finished_at || ''), Number(a.duration_sec) || '', jawaban]);\n  return { ok: true, duplicate: false, attempt_id: id, server_score: score, passed: status === 'LULUS', score_mismatch: false };\n}\n\nfunction qbReportMateri_(ss, b) {\n  var who = qbAuth_(ss, b.token);\n  var pack = String(b.packId || '');\n  var key = who.studentId + ':' + pack + ':' + String(b.buildingId || '');\n  var sh = ss.getSheetByName('Materi');\n  var rows = qbRows_(sh);\n  for (var i = 0; i < rows.length; i++) if (rows[i][1] === key) return { ok: true, duplicate: true };\n  sh.appendRow([qbNow_(), key, who.code, who.name, who.studentId, pack, String(b.buildingId || ''), String(b.readAt || '')]);\n  return { ok: true, duplicate: false };\n}\n\nvar QB_ALPHA = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';\nfunction qbCertValid_(no) {\n  var m = /^QBC-(\\d{4})-([A-Z]{1,3})-([0-9A-HJKMNP-TV-Z]{4})-([0-9A-HJKMNP-TV-Z]{4})([0-9A-HJKMNP-TV-Z])$/.exec(String(no || ''));\n  if (!m) return false;\n  var body = m[3] + m[4], s = 0;\n  for (var i = 0; i < body.length; i++) s += QB_ALPHA.indexOf(body.charAt(i)) * (i + 1);\n  return QB_ALPHA.charAt(s % 32) === m[5];\n}\nfunction qbCertNew_() {\n  var body = '', s = 0;\n  for (var i = 0; i < 8; i++) body += QB_ALPHA.charAt(Math.floor(Math.random() * 32));\n  for (var k = 0; k < 8; k++) s += QB_ALPHA.indexOf(body.charAt(k)) * (k + 1);\n  return 'QBC-' + new Date().getFullYear() + '-GSH-' + body.slice(0, 4) + '-' + body.slice(4) + QB_ALPHA.charAt(s % 32);\n}\n\nfunction qbClaimCertificate_(ss, b) {\n  var who = qbAuth_(ss, b.token);\n  var c = b.client || {};\n  var pack = String(c.pack_id || '');\n  var sh = ss.getSheetByName('Sertifikat');\n  var rows = qbRows_(sh);\n  for (var i = 0; i < rows.length; i++) {\n    if (String(rows[i][8]) === who.studentId && String(rows[i][9]) === String(b.achievementId || '') && String(rows[i][1]).toUpperCase() !== 'DICABUT') {\n      return { ok: true, duplicate: true, status: 'VERIFIED', number: String(rows[i][0]), issued_at: qbIso_(rows[i][7]) };\n    }\n  }\n  // Cek silang dengan tab Hasil: setiap gedung wajib punya ujian LULUS, dan nilai minimal bila diminta\n  var check = c.check || {};\n  var need = Array.isArray(check.buildingIds) ? check.buildingIds.map(String) : [];\n  var hasil = qbRows_(ss.getSheetByName('Hasil')).filter(function (r) { return String(r[4]) === who.studentId && (!pack || String(r[5]) === pack) && r[7] === 'Ujian'; });\n  var best = {}, passed = {};\n  hasil.forEach(function (r) { var g = String(r[6]); best[g] = Math.max(best[g] || 0, Number(r[8]) || 0); if (r[12] === 'LULUS') passed[g] = true; });\n  var missing = need.filter(function (g) { return check.requirePassAll && !passed[g]; });\n  var avg = need.length ? Math.round(need.reduce(function (s, g) { return s + (best[g] || 0); }, 0) / need.length) : 0;\n  var minOk = true;\n  if (check.minScore != null && need.length) {\n    minOk = check.scope === 'each' ? need.every(function (g) { return (best[g] || 0) >= Number(check.minScore); }) : avg >= Number(check.minScore);\n  }\n  if (!need.length || missing.length || !minOk) {\n    return { ok: false, status: 'REJECTED', evaluation: { missing: missing, average: avg, minScore: check.minScore } };\n  }\n  var no = String(b.number || '').toUpperCase();\n  var used = rows.some(function (r) { return String(r[0]) === no; });\n  if (!qbCertValid_(no) || used) no = qbCertNew_();\n  var now = qbNow_();\n  sh.appendRow([no, 'VERIFIED', who.name, who.code, who.className, String(c.package_title || pack), String(c.award_title || ''), now, who.studentId, String(b.achievementId || ''), '']);\n  return { ok: true, duplicate: false, status: 'VERIFIED', number: no, issued_at: qbIso_(now) };\n}\n\nfunction qbVerify_(ss, number) {\n  var no = String(number || '').trim().toUpperCase().slice(0, 40);\n  var rows = qbRows_(ss.getSheetByName('Sertifikat') || qbSheet_(ss, 'Sertifikat'));\n  for (var i = 0; i < rows.length; i++) {\n    if (String(rows[i][0]).toUpperCase() === no && no) {\n      var revoked = String(rows[i][1]).toUpperCase() === 'DICABUT' || String(rows[i][1]).toUpperCase() === 'REVOKED';\n      return { found: true, number: String(rows[i][0]), status: revoked ? 'REVOKED' : 'VERIFIED', student_name: String(rows[i][2]), class_name: String(rows[i][4]),\n        package_title: String(rows[i][5]), award_title: String(rows[i][6]), issued_at: qbIso_(rows[i][7]), revoked_at: revoked ? qbIso_(qbNow_()) : null };\n    }\n  }\n  return { found: false };\n}\n";
+
     /* =======================================================================
        MODULE 19: ONLINE UI — Panel Guru (akun, sekolah, kelas, siswa, paket,
        penugasan, hasil, sertifikat, status sinkronisasi), Masuk Kelas Siswa,
@@ -20937,12 +21009,14 @@ module.exports = QRCode;
         const snap = await OfflineStore.snapshotInfo();
         const pwa = PwaManager.info;
         const cache = await PwaManager.cacheReport();
+        const mode = st.mode || (cfg ? (cfg.type === "sheets" ? "sheets" : "supabase") : "sheets");
+        st.mode = mode;
         host.innerHTML = `
           <div class="ts-card">
             <h4 class="font-display text-base font-bold text-white"><i class="fa-solid fa-signal text-[#6ee7b7]"></i> Status Integrasi</h4>
             <div class="grid sm:grid-cols-2 gap-2 mt-2 text-[11px]">
               <div class="ts-stat"><span>Koneksi perangkat</span><b>${navigator.onLine === false ? "OFFLINE" : "ONLINE"}</b></div>
-              <div class="ts-stat"><span>Backend Supabase</span><b>${cfg ? "DIKONFIGURASI (" + esc(cfg.source) + ")" : "BELUM DIKONFIGURASI — mode lokal (LOCAL_ONLY)"}</b></div>
+              <div class="ts-stat"><span>Penyimpanan online</span><b>${cfg ? (cfg.type === "sheets" ? "GOOGLE SHEETS" : "SUPABASE") + " — dikonfigurasi (" + esc(cfg.source) + ")" : "BELUM DIKONFIGURASI — mode lokal (LOCAL_ONLY)"}</b></div>
               <div class="ts-stat"><span>Akun guru</span><b>${sess ? "Masuk sebagai " + esc(sess.email || "") : "Belum masuk"}</b></div>
               <div class="ts-stat"><span>Antrean sinkronisasi</span><b>${counts.PENDING_SYNC} menunggu • ${counts.SYNC_FAILED} gagal • ${counts.SYNCED} tersinkron</b></div>
               <div class="ts-stat"><span>Sinkron terakhir</span><b>${last.at ? esc(new Date(last.at).toLocaleString("id-ID")) : "-"}${last.error ? " — " + esc(last.error) : ""}</b></div>
@@ -20958,20 +21032,47 @@ module.exports = QRCode;
           </div>
 
           <div class="ts-card">
+            <h4 class="font-bold text-white mb-1"><i class="fa-solid fa-plug text-[#F5C542]"></i> Pilih penyimpanan nilai online</h4>
+            <div class="grid sm:grid-cols-2 gap-2">
+              <label class="ts-mode ${mode === "sheets" ? "is-active" : ""}"><input type="radio" name="onBackendMode" value="sheets" ${mode === "sheets" ? "checked" : ""}> <span><b class="text-white">Google Sheets</b> — paling mudah, untuk satu guru. Nilai masuk ke Google Sheet milik Anda.</span></label>
+              <label class="ts-mode ${mode === "supabase" ? "is-active" : ""}"><input type="radio" name="onBackendMode" value="supabase" ${mode === "supabase" ? "checked" : ""}> <span><b class="text-white">Supabase</b> — database lengkap untuk banyak guru &amp; sekolah.</span></label>
+            </div>
+          </div>
+
+          <div class="ts-card ${mode === "sheets" ? "" : "hidden"}" id="onSheetsCard">
+            <h4 class="font-bold text-white mb-1"><i class="fa-solid fa-table text-[#6ee7b7]"></i> Hubungkan Google Sheets</h4>
+            <p class="text-[11px] text-[#D9BE96] mb-2">1) Buat Google Sheet baru → Extensions → Apps Script. 2) Tempel skrip di bawah, jalankan <b>siapkanSheet</b>. 3) Deploy → New deployment → Web app, akses <b>Anyone</b>. 4) Tempel alamat Web app (berakhiran <code>/exec</code>) di sini.</p>
+            <div class="ts-row mb-2">
+              <button type="button" class="ts-btn gold" onclick="OnlineUI.copySheetsScript()"><i class="fa-solid fa-copy"></i> Salin Skrip Apps Script</button>
+              <button type="button" class="ts-btn" onclick="OnlineUI.downloadSheetsScript()"><i class="fa-solid fa-download"></i> Unduh Code.gs</button>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-2">
+              <label class="ts-label sm:col-span-2">Alamat Web App Google Sheets<input id="onSheetsUrl" class="ts-input" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(cfg && cfg.type === "sheets" && cfg.source === "perangkat" ? cfg.url : "")}"></label>
+              <label class="ts-label sm:col-span-2">Alamat halaman verifikasi sertifikat (kosongkan = alamat halaman ini)<input id="onSheetsVerify" class="ts-input" placeholder="${esc(location.protocol === "https:" ? location.origin + location.pathname : "https://nama-akun.github.io/Qurablox-City/")}" value="${esc(cfg && cfg.type === "sheets" ? cfg.verifyPageUrl || "" : "")}"></label>
+            </div>
+            <div class="ts-row mt-2">
+              <button type="button" class="ts-btn gold" onclick="OnlineUI.saveSheetsConfig()"><i class="fa-solid fa-floppy-disk"></i> Simpan &amp; Uji Koneksi</button>
+              ${cfg && cfg.type === "sheets" && cfg.source === "perangkat" ? `<button type="button" class="ts-btn danger" onclick="OnlineUI.clearConfig()">Putuskan</button>` : ""}
+            </div>
+            <p class="text-[10px] text-[#D9BE96] mt-2">Agar SEMUA perangkat siswa otomatis terhubung, buat file <code>qurablox-backend.json</code> di repositori GitHub berisi:<br><code class="text-[#F3E5AB] break-all">{"type": "sheets", "url": "ALAMAT_WEB_APP_ANDA"}</code></p>
+            ${cfg && cfg.type === "sheets" ? `<div class="ts-ok mt-2">Kelola kelas &amp; siswa di tab <b>Kelas</b> dan <b>Siswa</b> pada Google Sheet Anda. Nilai masuk ke tab <b>Hasil</b>, sertifikat ke tab <b>Sertifikat</b> (ubah status menjadi DICABUT untuk mencabut).</div>` : ""}
+          </div>
+
+          <div class="ts-card ${mode === "supabase" ? "" : "hidden"}" data-supabase-only>
             <h4 class="font-bold text-white mb-1"><i class="fa-solid fa-plug text-[#F5C542]"></i> 1. Hubungkan Proyek Supabase</h4>
             <p class="text-[11px] text-[#D9BE96] mb-2">Isi dari Supabase → Project Settings → API: <b>Project URL</b> dan <b>anon / publishable key</b> (kunci publik). <b class="text-rose-300">Jangan pernah memasukkan service_role / secret key.</b> Tanpa ini semua fitur tetap berjalan offline.</p>
             <div class="grid sm:grid-cols-2 gap-2">
-              <label class="ts-label">Project URL<input id="onCfgUrl" class="ts-input" placeholder="https://xxxx.supabase.co" value="${esc(cfg && cfg.source === "perangkat" ? cfg.url : "")}"></label>
+              <label class="ts-label">Project URL<input id="onCfgUrl" class="ts-input" placeholder="https://xxxx.supabase.co" value="${esc(cfg && cfg.type !== "sheets" && cfg.source === "perangkat" ? cfg.url : "")}"></label>
               <label class="ts-label">Anon / publishable key<input id="onCfgKey" class="ts-input" placeholder="${cfg ? esc(maskKey(cfg.anonKey)) : "eyJhbGciOi… atau sb_publishable_…"}"></label>
               <label class="ts-label sm:col-span-2">Alamat halaman verifikasi (tempat file HTML ini di-hosting, mis. https://sekolah.sch.id/qurablox/)<input id="onCfgVerify" class="ts-input" placeholder="https://…" value="${esc(cfg ? cfg.verifyPageUrl || "" : "")}"></label>
             </div>
             <div class="ts-row mt-2">
               <button type="button" class="ts-btn gold" onclick="OnlineUI.saveConfig()"><i class="fa-solid fa-floppy-disk"></i> Simpan &amp; Uji Koneksi</button>
-              ${cfg && cfg.source === "perangkat" ? `<button type="button" class="ts-btn danger" onclick="OnlineUI.clearConfig()">Putuskan</button>` : ""}
+              ${cfg && cfg.type !== "sheets" && cfg.source === "perangkat" ? `<button type="button" class="ts-btn danger" onclick="OnlineUI.clearConfig()">Putuskan</button>` : ""}
             </div>
           </div>
 
-          <div class="ts-card ${cfg ? "" : "opacity-50 pointer-events-none"}">
+          <div class="ts-card ${cfg && cfg.type !== "sheets" ? "" : "opacity-50 pointer-events-none"} ${mode === "supabase" ? "" : "hidden"}" data-supabase-only>
             <h4 class="font-bold text-white mb-1"><i class="fa-solid fa-user-tie text-[#F5C542]"></i> 2. Akun Guru</h4>
             ${sess ? `<div class="ts-row"><span class="text-xs text-white">Masuk sebagai <b>${esc(sess.email || "")}</b></span><button type="button" class="ts-btn" onclick="OnlineUI.signOut()">Keluar</button></div>` : `
             <div class="grid sm:grid-cols-3 gap-2">
@@ -20983,7 +21084,7 @@ module.exports = QRCode;
             <p class="text-[10px] text-[#D9BE96] mt-1">Kata sandi dikirim langsung ke Supabase Auth dan tidak disimpan oleh aplikasi.</p>`}
           </div>
 
-          <div class="ts-card ${sess ? "" : "opacity-50 pointer-events-none"}" id="onTeacherArea">
+          <div class="ts-card ${sess ? "" : "opacity-50 pointer-events-none"} ${mode === "supabase" ? "" : "hidden"}" id="onTeacherArea" data-supabase-only>
             <h4 class="font-bold text-white mb-2"><i class="fa-solid fa-school text-[#F5C542]"></i> 3. Sekolah, Kelas &amp; Siswa</h4>
             <div class="grid lg:grid-cols-2 gap-3">
               <div>
@@ -20997,13 +21098,34 @@ module.exports = QRCode;
             </div>
           </div>
 
-          <div class="ts-card ${sess ? "" : "opacity-50 pointer-events-none"}">
+          <div class="ts-card ${sess ? "" : "opacity-50 pointer-events-none"} ${mode === "supabase" ? "" : "hidden"}" data-supabase-only>
             <h4 class="font-bold text-white mb-1"><i class="fa-solid fa-box-open text-[#F5C542]"></i> 4. Terbitkan Paket ke Server</h4>
             <p class="text-[11px] text-[#D9BE96] mb-2">Mengunggah paket aktif (${esc(ContentManager.getActivePack().subjectName)} ${esc(ContentManager.getActivePack().gradeLabel)}) beserta materi, bank soal, KKM, dan syarat Grand Finale sebagai versi baru yang tidak dapat diubah.</p>
             <div class="ts-row"><button type="button" class="ts-btn gold" onclick="OnlineUI.publishActivePack()"><i class="fa-solid fa-cloud-arrow-up"></i> Terbitkan Paket Aktif</button></div>
             <div id="onPackageList" class="text-[11px] text-[#D9BE96] mt-2"></div>
           </div>`;
-        if (sess && cfg) refreshTeacherData();
+        host.querySelectorAll('input[name="onBackendMode"]').forEach(r => r.addEventListener("change", () => { st.mode = r.value; renderTeacherTab(); }));
+        if (sess && cfg && cfg.type !== "sheets") refreshTeacherData();
+      }
+
+      async function saveSheetsConfig() {
+        const v = BackendConfig.save({ type: "sheets", url: document.getElementById("onSheetsUrl").value.trim(), verifyPageUrl: document.getElementById("onSheetsVerify").value.trim() });
+        if (!v.ok) { toast(v.errors[0], "bad"); return v; }
+        toast("Tersimpan. Menguji koneksi ke Google Sheets…", "ok");
+        try {
+          const ok = await BackendClient.testConnection();
+          toast(ok ? "Koneksi berhasil: Google Sheet Qurablox siap menerima nilai." : "Alamat merespons, tetapi bukan skrip Qurablox. Periksa skrip yang ditempel.", ok ? "ok" : "bad");
+        } catch (e) { toast("Koneksi gagal: " + e.message, "bad"); }
+        NetStatus.render();
+        renderTeacherTab();
+        return v;
+      }
+      async function copySheetsScript() {
+        try { await navigator.clipboard.writeText(QB_SHEETS_SCRIPT); toast("Skrip disalin. Tempel di Apps Script (Ctrl+V).", "ok"); }
+        catch (e) { downloadSheetsScript(); toast("Tidak bisa menyalin otomatis — file Code.gs diunduh.", "ok"); }
+      }
+      function downloadSheetsScript() {
+        CertificateGenerator.triggerDownload(new Blob([QB_SHEETS_SCRIPT], { type: "text/plain;charset=utf-8" }), "Code.gs");
       }
 
       async function refreshTeacherData() {
@@ -21189,6 +21311,7 @@ module.exports = QRCode;
         m.dataset.player = String(Number.isInteger(playerIdx) ? playerIdx : (GameApp.getSetupPlayerTab ? GameApp.getSetupPlayerTab() : 0));
         document.getElementById("joinStep1").classList.remove("hidden");
         document.getElementById("joinStep2").classList.add("hidden");
+        const pickHint = document.getElementById("joinPickHint"); if (pickHint) pickHint.classList.remove("hidden");
         document.getElementById("joinMsg").textContent = BackendConfig.isConfigured() ? "" : "Backend online belum dikonfigurasi oleh guru pada perangkat/aplikasi ini. Kamu tetap bisa bermain offline.";
         m.classList.remove("hidden");
       }
@@ -21207,12 +21330,20 @@ module.exports = QRCode;
           const d = StorageManager.getData();
           const p = d.players[idx];
           p.name = r.display_name; p.class = r.class_name;
-          p.online = { studentId: r.student_id, classId: r.class_id, className: r.class_name, joinedAt: new Date().toISOString() };
+          const sheetsMode = BackendConfig.isSheets();
+          p.online = { studentId: r.student_id, classId: r.class_id, className: r.class_name, joinedAt: new Date().toISOString(), mode: sheetsMode ? "sheets" : "supabase" };
           StorageManager.setData(d);
           if (GameApp.refreshSetupInputs) GameApp.refreshSetupInputs();
           document.getElementById("joinStep1").classList.add("hidden");
           document.getElementById("joinStep2").classList.remove("hidden");
           document.getElementById("joinWho").textContent = `${r.display_name} • ${r.class_name}`;
+          if (sheetsMode) {
+            document.getElementById("joinAssignments").innerHTML = `<div class="ts-ok">Berhasil terhubung. Nilai latihan, ujian, dan sertifikat akan dikirim ke Google Sheet guru. Silakan lanjut bermain.</div>`;
+            const hint = document.getElementById("joinPickHint"); if (hint) hint.classList.add("hidden");
+            msg.textContent = "";
+            setTimeout(closeJoin, 1800);
+            return;
+          }
           const list = document.getElementById("joinAssignments");
           list.innerHTML = (r.assignments || []).length ? r.assignments.map(a => `<button type="button" class="w-full text-left ts-card !p-2" data-asg="${esc(a.id)}"><b class="text-white">${esc(a.title || a.package_title)}</b><br><span class="text-[10px] text-[#D9BE96]">${esc(a.package_title)} • versi ${a.version}</span></button>`).join("") : `<p class="text-[11px] text-[#D9BE96]">Belum ada penugasan aktif. Kamu tetap terhubung; hasil akan tersinkron setelah guru membuat penugasan dan kamu memilihnya.</p>`;
           list.querySelectorAll("[data-asg]").forEach(b => b.addEventListener("click", () => downloadAssignment(idx, b.dataset.asg)));
@@ -21304,7 +21435,7 @@ module.exports = QRCode;
 
       return {
         updateJoinStatus, unlinkPlayer,
-        renderTeacherTab, refreshTeacherData, selectClass, saveConfig, clearConfig, signIn, signUp, signOut, createSchool, joinSchool, createClass,
+        renderTeacherTab, refreshTeacherData, selectClass, saveConfig, saveSheetsConfig, copySheetsScript, downloadSheetsScript, clearConfig, signIn, signUp, signOut, createSchool, joinSchool, createClass,
         addStudents, publishActivePack, createAssignment, syncNow, restoreFromIdb, openSyncModal, renderSyncModal, closeSyncModal,
         openJoin, closeJoin, submitJoin, downloadAssignment, installAssignmentPack, handleVerifyParam, closeVerify
       };
@@ -21608,7 +21739,7 @@ module.exports = QRCode;
       </div>
       <div id="joinStep2" class="mt-3 hidden">
         <p class="text-xs text-white">Terhubung sebagai <b id="joinWho"></b></p>
-        <p class="text-[11px] text-[#D9BE96] mt-1 mb-2">Pilih penugasan untuk diunduh:</p>
+        <p id="joinPickHint" class="text-[11px] text-[#D9BE96] mt-1 mb-2">Pilih penugasan untuk diunduh:</p>
         <div id="joinAssignments" class="space-y-1.5"></div>
       </div>
       <p id="joinMsg" class="text-[11px] text-[#F5C542] mt-2 min-h-[1rem]"></p>
