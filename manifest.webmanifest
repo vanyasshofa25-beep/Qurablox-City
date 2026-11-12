@@ -1,0 +1,18 @@
+{
+  "name": "Qurablox City — Petualangan 3D Al-Qur'an & Ilmu Tajwid",
+  "short_name": "Qurablox City",
+  "description": "Game edukasi 3D pembelajaran Al-Qur'an dan Ilmu Tajwid Kelas IX SMP. Berjalan offline; sinkronisasi online opsional.",
+  "lang": "id",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#101D38",
+  "theme_color": "#101D38",
+  "categories": ["education", "games"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

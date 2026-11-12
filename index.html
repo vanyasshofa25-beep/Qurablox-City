@@ -12088,6 +12088,7 @@ ${errMsg}`);
       }
 
       function openPlayerSetup() {
+        try { if (typeof PackSync !== "undefined") PackSync.checkForUpdate(); } catch (e) {}
         document.getElementById("modalPlayerSetup").classList.remove("hidden");
         renderAvatarsGrid();
         renderPlayerInputs();
@@ -15226,6 +15227,7 @@ Silakan berikan perangkat kepada ${p.name}.`);
         if (tabId === 'structure') { TeacherStudioPro.renderStructureTab(); if (typeof TeacherFinale !== 'undefined') TeacherFinale.renderPackVersionCard(); }
         if (tabId === 'finale' && typeof TeacherFinale !== 'undefined') TeacherFinale.render();
         if (tabId === 'online' && typeof OnlineUI !== 'undefined') OnlineUI.renderTeacherTab();
+        if (typeof PackSync !== 'undefined') PackSync.refreshBadge();
         if (tabId === 'buildings') TeacherStudioPro.renderMateriTab();
         if (tabId === 'qbank') TeacherStudioPro.renderQbankTab();
         if (tabId === 'quizcfg') TeacherStudioPro.renderQuizCfgTab();
@@ -19275,7 +19277,12 @@ module.exports = QRCode;
         SHEETS_ACCESS: "Google Sheets tidak bisa diakses. Pastikan Web App di-deploy dengan akses 'Anyone / Siapa saja' dan alamatnya diakhiri /exec.",
         NOT_SUPPORTED_SHEETS: "Fitur ini hanya untuk mode Supabase. Pada mode Google Sheets, kelola kelas & siswa langsung di Google Sheet.",
         INVALID_ATTEMPT: "Data hasil tidak valid.",
-        SERVER_ERROR: "Server sedang bermasalah, coba lagi nanti."
+        SERVER_ERROR: "Server sedang bermasalah, coba lagi nanti.",
+        KODE_GURU_BELUM_DIATUR: "Kode guru belum diatur. Isi sel nilai pada baris kode_guru di tab Pengaturan Google Sheet (minimal 6 karakter).",
+        KODE_GURU_SALAH: "Kode guru salah.",
+        PAKET_TIDAK_VALID: "Isi paket tidak valid.",
+        PAKET_TERLALU_BESAR: "Paket terlalu besar (lebih dari 5 MB). Kecilkan logo sertifikat atau kurangi materi.",
+        PAKET_RUSAK: "Paket di Google Sheet tidak lengkap. Terbitkan ulang dari Teacher Studio."
       };
       function errText(code, fallback) { return ERROR_TEXT[code] || fallback || code; }
 
@@ -19398,7 +19405,8 @@ module.exports = QRCode;
         return !!(r && r.found === false);
       }
 
-      return { rpc, signUp, signIn, signOut, getSession, setSession, studentToken, setStudentToken, getStudentTokens, testConnection, errText };
+      function sheetsCall(action, payload, timeout) { return sheetsPost(Object.assign({ action }, payload || {}), timeout); }
+      return { rpc, sheetsCall, signUp, signIn, signOut, getSession, setSession, studentToken, setStudentToken, getStudentTokens, testConnection, errText };
     })();
 
     const OfflineStore = (() => {
@@ -20976,7 +20984,7 @@ module.exports = QRCode;
     if (typeof window !== "undefined") window.TeacherFinale = TeacherFinale;
 
     /* Skrip Apps Script untuk mode Google Sheets (disalin guru dari Teacher Studio) */
-    const QB_SHEETS_SCRIPT = "/**\n * QURABLOX CITY — Mode Google Sheets (Apps Script)\n * Versi 1.0 • Tempel seluruh isi file ini di Extensions → Apps Script pada Google Sheet Anda.\n *\n * Tab yang dibuat otomatis (jalankan fungsi siapkanSheet sekali):\n *   Kelas      : daftar kelas + kode kelas (diisi guru)\n *   Siswa      : daftar siswa per kode kelas, PIN opsional (diisi guru)\n *   Hasil      : nilai latihan & ujian yang dikirim game (otomatis)\n *   Materi     : catatan materi yang sudah dibaca (otomatis)\n *   Sertifikat : sertifikat Grand Finale yang dicatat (otomatis; ubah status menjadi DICABUT untuk mencabut)\n *   Sesi, Log  : data teknis (jangan diubah)\n *\n * Keamanan: game hanya bisa menulis lewat kode kelas + nama terdaftar (+PIN). Isi Sheet hanya bisa\n * dilihat pemilik Sheet. Nilai dihitung di perangkat siswa lalu dicatat di sini.\n */\nvar QB_VERSION = '1.0';\nvar QB_SHEETS = {\n  Kelas: ['kode_kelas', 'nama_kelas', 'aktif', 'catatan'],\n  Siswa: ['kode_kelas', 'nama_siswa', 'pin', 'aktif', 'student_id'],\n  Hasil: ['waktu_diterima', 'attempt_id', 'kode_kelas', 'nama_siswa', 'student_id', 'paket', 'gedung', 'mode', 'nilai', 'benar', 'total', 'kkm', 'status', 'selesai_pada', 'durasi_detik', 'jawaban'],\n  Materi: ['waktu_diterima', 'kunci', 'kode_kelas', 'nama_siswa', 'student_id', 'paket', 'gedung', 'dibaca_pada'],\n  Sertifikat: ['nomor', 'status', 'nama_siswa', 'kode_kelas', 'nama_kelas', 'paket', 'gelar', 'diterbitkan', 'student_id', 'id_pencapaian', 'catatan'],\n  Sesi: ['token_hash', 'student_id', 'kode_kelas', 'nama_siswa', 'dibuat', 'kedaluwarsa'],\n  Log: ['waktu', 'aksi', 'hasil', 'detail']\n};\n\n/** Jalankan SEKALI dari editor (tombol Run) untuk membuat semua tab. */\nfunction siapkanSheet() {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  Object.keys(QB_SHEETS).forEach(function (name) { qbSheet_(ss, name); });\n  var kelas = ss.getSheetByName('Kelas');\n  if (kelas.getLastRow() < 2) kelas.appendRow(['IX4TAJWID', 'IX-4', 'YA', 'Contoh — ganti dengan kelas Anda']);\n  var siswa = ss.getSheetByName('Siswa');\n  if (siswa.getLastRow() < 2) {\n    siswa.appendRow(['IX4TAJWID', 'Ahmad Fauzan', '', 'YA', '']);\n    siswa.appendRow(['IX4TAJWID', 'Siti Aisyah', '4321', 'YA', '']);\n  }\n  return 'Tab Qurablox siap. Isi tab Kelas dan Siswa, lalu Deploy sebagai Web app.';\n}\n\nfunction qbSheet_(ss, name) {\n  var sh = ss.getSheetByName(name);\n  if (!sh) {\n    sh = ss.insertSheet(name);\n    sh.appendRow(QB_SHEETS[name]);\n    sh.setFrozenRows(1);\n  } else if (sh.getLastRow() === 0) {\n    sh.appendRow(QB_SHEETS[name]);\n    sh.setFrozenRows(1);\n  }\n  return sh;\n}\n\nfunction qbJson_(obj) {\n  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction qbKey_(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/\\s+/g, ' '); }\nfunction qbCode_(s) { return String(s == null ? '' : s).trim().toUpperCase(); }\nfunction qbYes_(v) { var t = String(v == null ? '' : v).trim().toUpperCase(); return t === '' || t === 'YA' || t === 'Y' || t === 'TRUE' || t === 'AKTIF' || v === true; }\nfunction qbNow_() { return new Date(); }\nfunction qbIso_(v) { var d = (v instanceof Date) ? v : new Date(v); return isNaN(d.getTime()) ? String(v || '') : d.toISOString(); }\n\nfunction qbSha_(text) {\n  var raw = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, text, Utilities.Charset.UTF_8);\n  // awalan h_ agar Google Sheets tidak pernah mengubah hash menjadi angka\n  return 'h_' + raw.map(function (b) { var v = (b < 0 ? b + 256 : b).toString(16); return v.length === 1 ? '0' + v : v; }).join('');\n}\n\nfunction qbRows_(sh) {\n  var last = sh.getLastRow();\n  if (last < 2) return [];\n  return sh.getRange(2, 1, last - 1, sh.getLastColumn()).getValues();\n}\n\nfunction qbLog_(ss, aksi, hasil, detail) {\n  try { qbSheet_(ss, 'Log').appendRow([qbNow_(), String(aksi || ''), String(hasil || ''), String(detail || '').slice(0, 300)]); } catch (e) {}\n}\n\nfunction doGet(e) {\n  var p = (e && e.parameter) || {};\n  try {\n    var ss = SpreadsheetApp.getActiveSpreadsheet();\n    if (p.action === 'verify') return qbJson_(qbVerify_(ss, p.number));\n    return qbJson_({ ok: true, app: 'QURABLOX_SHEETS', version: QB_VERSION });\n  } catch (err) {\n    return qbJson_({ ok: false, error: 'SERVER_ERROR', message: String(err) });\n  }\n}\n\nfunction doPost(e) {\n  var lock = LockService.getScriptLock();\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var body = {};\n  try {\n    body = JSON.parse((e && e.postData && e.postData.contents) || '{}');\n  } catch (err) {\n    return qbJson_({ ok: false, error: 'BAD_REQUEST' });\n  }\n  try {\n    lock.waitLock(20000);\n    Object.keys(QB_SHEETS).forEach(function (name) { qbSheet_(ss, name); });\n    var out;\n    switch (body.action) {\n      case 'ping': out = { ok: true, app: 'QURABLOX_SHEETS', version: QB_VERSION }; break;\n      case 'join': out = qbJoin_(ss, body); break;\n      case 'submitAttempt': out = qbSubmitAttempt_(ss, body); break;\n      case 'reportMateri': out = qbReportMateri_(ss, body); break;\n      case 'claimCertificate': out = qbClaimCertificate_(ss, body); break;\n      case 'verify': out = qbVerify_(ss, body.number); break;\n      default: out = { ok: false, error: 'UNKNOWN_ACTION' };\n    }\n    return qbJson_(out);\n  } catch (err) {\n    var code = String(err && err.message || err);\n    if (!/^[A-Z_]{6,}$/.test(code)) { qbLog_(ss, body.action, 'ERROR', code); code = 'SERVER_ERROR'; }\n    return qbJson_({ ok: false, error: code });\n  } finally {\n    try { lock.releaseLock(); } catch (e2) {}\n  }\n}\n\nfunction qbFindClass_(ss, code) {\n  var rows = qbRows_(ss.getSheetByName('Kelas'));\n  for (var i = 0; i < rows.length; i++) {\n    if (qbCode_(rows[i][0]) === code && code) return { name: String(rows[i][1] || code), active: qbYes_(rows[i][2]) };\n  }\n  return null;\n}\n\nfunction qbJoin_(ss, b) {\n  var code = qbCode_(b.classCode);\n  var cache = CacheService.getScriptCache();\n  var failKey = 'qbfail_' + code;\n  var fails = Number(cache.get(failKey) || 0);\n  if (fails >= 20) throw new Error('TOO_MANY_ATTEMPTS');\n  var cls = qbFindClass_(ss, code);\n  var siswa = ss.getSheetByName('Siswa');\n  var rows = qbRows_(siswa);\n  var key = qbKey_(b.name);\n  var found = -1;\n  for (var i = 0; i < rows.length; i++) {\n    if (qbCode_(rows[i][0]) === code && qbKey_(rows[i][1]) === key && qbYes_(rows[i][3])) { found = i; break; }\n  }\n  var pinCell = found >= 0 ? String(rows[found][2]).trim() : '';\n  var pinIn = String(b.pin == null ? '' : b.pin).trim();\n  var pinOk = found >= 0 && (pinCell === '' || pinCell === pinIn || (/^\\d+$/.test(pinIn) && pinCell !== '' && Number(pinCell) === Number(pinIn)));\n  if (!cls || !cls.active || found < 0 || !pinOk) {\n    cache.put(failKey, String(fails + 1), 900);\n    qbLog_(ss, 'join', 'GAGAL', code + ' / ' + key);\n    return { ok: false, error: 'JOIN_FAILED' };\n  }\n  var sid = String(rows[found][4] || '').trim();\n  if (!sid) { sid = Utilities.getUuid(); siswa.getRange(found + 2, 5).setValue(sid); }\n  var token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');\n  var exp = new Date(Date.now() + 120 * 24 * 3600 * 1000);\n  ss.getSheetByName('Sesi').appendRow([qbSha_(token), sid, code, String(rows[found][1]), qbNow_(), exp]);\n  qbLog_(ss, 'join', 'OK', code + ' / ' + rows[found][1]);\n  return { ok: true, token: token, student_id: sid, display_name: String(rows[found][1]), class_id: code, class_name: cls.name, grade_label: '', assignments: [] };\n}\n\nfunction qbAuth_(ss, token) {\n  if (!token || String(token).length < 32) throw new Error('TOKEN_INVALID');\n  var h = qbSha_(String(token));\n  var rows = qbRows_(ss.getSheetByName('Sesi'));\n  for (var i = rows.length - 1; i >= 0; i--) {\n    if (rows[i][0] === h) {\n      if (new Date(rows[i][5]).getTime() < Date.now()) throw new Error('TOKEN_INVALID');\n      var sid = rows[i][1], code = qbCode_(rows[i][2]);\n      var cls = qbFindClass_(ss, code);\n      var st = qbRows_(ss.getSheetByName('Siswa'));\n      for (var j = 0; j < st.length; j++) {\n        if (String(st[j][4]) === String(sid)) {\n          if (!qbYes_(st[j][3]) || !cls || !cls.active) throw new Error('TOKEN_INVALID');\n          return { studentId: String(sid), code: code, name: String(st[j][1]), className: cls.name };\n        }\n      }\n      throw new Error('TOKEN_INVALID');\n    }\n  }\n  throw new Error('TOKEN_INVALID');\n}\n\nfunction qbSubmitAttempt_(ss, b) {\n  var who = qbAuth_(ss, b.token);\n  var a = b.attempt || {};\n  var id = String(a.attempt_id || '');\n  if (id.length < 6 || id.length > 120) throw new Error('INVALID_ATTEMPT');\n  var sh = ss.getSheetByName('Hasil');\n  var rows = qbRows_(sh);\n  for (var i = 0; i < rows.length; i++) {\n    if (String(rows[i][1]) === id) {\n      if (String(rows[i][4]) !== who.studentId) throw new Error('ATTEMPT_CONFLICT');\n      return { ok: true, duplicate: true, attempt_id: id, server_score: Number(rows[i][8]) || 0, passed: rows[i][12] === 'LULUS', score_mismatch: false };\n    }\n  }\n  var answers = Array.isArray(a.answers) ? a.answers.slice(0, 500) : [];\n  var total = Math.max(answers.length, Number(a.total_questions) || 0);\n  var correct = answers.filter(function (x) { return x && x.is_correct; }).length;\n  var score = Math.max(0, Math.min(100, Math.round(Number(a.client_score) || 0)));\n  var meta = a.meta || {};\n  var kkm = Math.max(0, Math.min(100, Number(meta.kkm) || 75));\n  var challenge = a.mode === 'challenge';\n  var status = challenge ? (score >= kkm ? 'LULUS' : 'REMEDIAL') : 'LATIHAN';\n  var jawaban = answers.map(function (x, k) { return (k + 1) + '. ' + (x.chosen_text == null ? '(kosong)' : String(x.chosen_text)) + (x.is_correct ? ' ✓' : ' ✗'); }).join('\\n').slice(0, 45000);\n  sh.appendRow([qbNow_(), id, who.code, who.name, who.studentId, String(meta.packId || ''), String(a.building_id || ''), challenge ? 'Ujian' : 'Latihan', score, correct, total, kkm, status, String(a.finished_at || ''), Number(a.duration_sec) || '', jawaban]);\n  return { ok: true, duplicate: false, attempt_id: id, server_score: score, passed: status === 'LULUS', score_mismatch: false };\n}\n\nfunction qbReportMateri_(ss, b) {\n  var who = qbAuth_(ss, b.token);\n  var pack = String(b.packId || '');\n  var key = who.studentId + ':' + pack + ':' + String(b.buildingId || '');\n  var sh = ss.getSheetByName('Materi');\n  var rows = qbRows_(sh);\n  for (var i = 0; i < rows.length; i++) if (rows[i][1] === key) return { ok: true, duplicate: true };\n  sh.appendRow([qbNow_(), key, who.code, who.name, who.studentId, pack, String(b.buildingId || ''), String(b.readAt || '')]);\n  return { ok: true, duplicate: false };\n}\n\nvar QB_ALPHA = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';\nfunction qbCertValid_(no) {\n  var m = /^QBC-(\\d{4})-([A-Z]{1,3})-([0-9A-HJKMNP-TV-Z]{4})-([0-9A-HJKMNP-TV-Z]{4})([0-9A-HJKMNP-TV-Z])$/.exec(String(no || ''));\n  if (!m) return false;\n  var body = m[3] + m[4], s = 0;\n  for (var i = 0; i < body.length; i++) s += QB_ALPHA.indexOf(body.charAt(i)) * (i + 1);\n  return QB_ALPHA.charAt(s % 32) === m[5];\n}\nfunction qbCertNew_() {\n  var body = '', s = 0;\n  for (var i = 0; i < 8; i++) body += QB_ALPHA.charAt(Math.floor(Math.random() * 32));\n  for (var k = 0; k < 8; k++) s += QB_ALPHA.indexOf(body.charAt(k)) * (k + 1);\n  return 'QBC-' + new Date().getFullYear() + '-GSH-' + body.slice(0, 4) + '-' + body.slice(4) + QB_ALPHA.charAt(s % 32);\n}\n\nfunction qbClaimCertificate_(ss, b) {\n  var who = qbAuth_(ss, b.token);\n  var c = b.client || {};\n  var pack = String(c.pack_id || '');\n  var sh = ss.getSheetByName('Sertifikat');\n  var rows = qbRows_(sh);\n  for (var i = 0; i < rows.length; i++) {\n    if (String(rows[i][8]) === who.studentId && String(rows[i][9]) === String(b.achievementId || '') && String(rows[i][1]).toUpperCase() !== 'DICABUT') {\n      return { ok: true, duplicate: true, status: 'VERIFIED', number: String(rows[i][0]), issued_at: qbIso_(rows[i][7]) };\n    }\n  }\n  // Cek silang dengan tab Hasil: setiap gedung wajib punya ujian LULUS, dan nilai minimal bila diminta\n  var check = c.check || {};\n  var need = Array.isArray(check.buildingIds) ? check.buildingIds.map(String) : [];\n  var hasil = qbRows_(ss.getSheetByName('Hasil')).filter(function (r) { return String(r[4]) === who.studentId && (!pack || String(r[5]) === pack) && r[7] === 'Ujian'; });\n  var best = {}, passed = {};\n  hasil.forEach(function (r) { var g = String(r[6]); best[g] = Math.max(best[g] || 0, Number(r[8]) || 0); if (r[12] === 'LULUS') passed[g] = true; });\n  var missing = need.filter(function (g) { return check.requirePassAll && !passed[g]; });\n  var avg = need.length ? Math.round(need.reduce(function (s, g) { return s + (best[g] || 0); }, 0) / need.length) : 0;\n  var minOk = true;\n  if (check.minScore != null && need.length) {\n    minOk = check.scope === 'each' ? need.every(function (g) { return (best[g] || 0) >= Number(check.minScore); }) : avg >= Number(check.minScore);\n  }\n  if (!need.length || missing.length || !minOk) {\n    return { ok: false, status: 'REJECTED', evaluation: { missing: missing, average: avg, minScore: check.minScore } };\n  }\n  var no = String(b.number || '').toUpperCase();\n  var used = rows.some(function (r) { return String(r[0]) === no; });\n  if (!qbCertValid_(no) || used) no = qbCertNew_();\n  var now = qbNow_();\n  sh.appendRow([no, 'VERIFIED', who.name, who.code, who.className, String(c.package_title || pack), String(c.award_title || ''), now, who.studentId, String(b.achievementId || ''), '']);\n  return { ok: true, duplicate: false, status: 'VERIFIED', number: no, issued_at: qbIso_(now) };\n}\n\nfunction qbVerify_(ss, number) {\n  var no = String(number || '').trim().toUpperCase().slice(0, 40);\n  var rows = qbRows_(ss.getSheetByName('Sertifikat') || qbSheet_(ss, 'Sertifikat'));\n  for (var i = 0; i < rows.length; i++) {\n    if (String(rows[i][0]).toUpperCase() === no && no) {\n      var revoked = String(rows[i][1]).toUpperCase() === 'DICABUT' || String(rows[i][1]).toUpperCase() === 'REVOKED';\n      return { found: true, number: String(rows[i][0]), status: revoked ? 'REVOKED' : 'VERIFIED', student_name: String(rows[i][2]), class_name: String(rows[i][4]),\n        package_title: String(rows[i][5]), award_title: String(rows[i][6]), issued_at: qbIso_(rows[i][7]), revoked_at: revoked ? qbIso_(qbNow_()) : null };\n    }\n  }\n  return { found: false };\n}\n";
+    const QB_SHEETS_SCRIPT = "/**\n * QURABLOX CITY — Mode Google Sheets (Apps Script)\n * Versi 1.1 • Tempel seluruh isi file ini di Ekstensi → Apps Script pada Google Sheet Anda.\n * Setelah mengganti skrip: Terapkan → Kelola deployment → ikon pensil → Versi: Versi baru → Terapkan.\n *\n * Tab yang dibuat otomatis (jalankan fungsi siapkanSheet sekali):\n *   Kelas      : daftar kelas + kode kelas (diisi guru)\n *   Siswa      : daftar siswa per kode kelas, PIN opsional (diisi guru)\n *   Hasil      : nilai latihan & ujian yang dikirim game (otomatis)\n *   Materi     : catatan materi yang sudah dibaca (otomatis)\n *   Sertifikat : sertifikat Grand Finale yang dicatat (otomatis; ubah status menjadi DICABUT untuk mencabut)\n *   Paket      : materi, soal & pengaturan yang diterbitkan guru (otomatis, jangan diubah)\n *   Pengaturan : isi kode_guru (kata sandi tombol \"Terbitkan ke Siswa\", minimal 6 karakter)\n *   Sesi, Log  : data teknis (jangan diubah)\n *\n * Keamanan: game hanya bisa menulis lewat kode kelas + nama terdaftar (+PIN). Isi Sheet hanya bisa\n * dilihat pemilik Sheet. Nilai dihitung di perangkat siswa lalu dicatat di sini.\n */\nvar QB_VERSION = '1.1';\nvar QB_CHUNK = 40000;   // batas aman per sel (Google Sheets maks. 50.000 karakter)\nvar QB_KEEP_VERSIONS = 5;\nvar QB_SHEETS = {\n  Kelas: ['kode_kelas', 'nama_kelas', 'aktif', 'catatan'],\n  Siswa: ['kode_kelas', 'nama_siswa', 'pin', 'aktif', 'student_id'],\n  Hasil: ['waktu_diterima', 'attempt_id', 'kode_kelas', 'nama_siswa', 'student_id', 'paket', 'gedung', 'mode', 'nilai', 'benar', 'total', 'kkm', 'status', 'selesai_pada', 'durasi_detik', 'jawaban', 'versi_paket'],\n  Materi: ['waktu_diterima', 'kunci', 'kode_kelas', 'nama_siswa', 'student_id', 'paket', 'gedung', 'dibaca_pada'],\n  Sertifikat: ['nomor', 'status', 'nama_siswa', 'kode_kelas', 'nama_kelas', 'paket', 'gelar', 'diterbitkan', 'student_id', 'id_pencapaian', 'catatan'],\n  Paket: ['versi', 'diterbitkan', 'paket_id', 'judul', 'potongan_ke', 'jumlah_potongan', 'data'],\n  Pengaturan: ['kunci', 'nilai', 'keterangan'],\n  Sesi: ['token_hash', 'student_id', 'kode_kelas', 'nama_siswa', 'dibuat', 'kedaluwarsa'],\n  Log: ['waktu', 'aksi', 'hasil', 'detail']\n};\n\n/** Jalankan SEKALI dari editor (tombol Run) untuk membuat semua tab. */\nfunction siapkanSheet() {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  Object.keys(QB_SHEETS).forEach(function (name) { qbSheet_(ss, name); });\n  var kelas = ss.getSheetByName('Kelas');\n  if (kelas.getLastRow() < 2) kelas.appendRow(['IX4TAJWID', 'IX-4', 'YA', 'Contoh — ganti dengan kelas Anda']);\n  var siswa = ss.getSheetByName('Siswa');\n  if (siswa.getLastRow() < 2) {\n    siswa.appendRow(['IX4TAJWID', 'Ahmad Fauzan', '', 'YA', '']);\n    siswa.appendRow(['IX4TAJWID', 'Siti Aisyah', '4321', 'YA', '']);\n  }\n  return 'Tab Qurablox siap. Isi tab Kelas dan Siswa, lalu Deploy sebagai Web app.';\n}\n\nfunction qbSheet_(ss, name) {\n  var sh = ss.getSheetByName(name);\n  if (!sh) {\n    sh = ss.insertSheet(name);\n    sh.appendRow(QB_SHEETS[name]);\n    sh.setFrozenRows(1);\n  } else if (sh.getLastRow() === 0) {\n    sh.appendRow(QB_SHEETS[name]);\n    sh.setFrozenRows(1);\n  } else {\n    // Lengkapi judul kolom baru (mis. versi_paket) tanpa mengubah judul yang sudah ada\n    var head = sh.getRange(1, 1, 1, QB_SHEETS[name].length).getValues()[0];\n    for (var i = 0; i < QB_SHEETS[name].length; i++) if (head[i] === '' || head[i] == null) sh.getRange(1, i + 1).setValue(QB_SHEETS[name][i]);\n  }\n  if (name === 'Pengaturan') {\n    var rows = qbRows_(sh);\n    var has = rows.some(function (r) { return String(r[0]).trim() === 'kode_guru'; });\n    if (!has) sh.appendRow(['kode_guru', '', 'Isi kata sandi guru (min. 6 karakter) untuk tombol Terbitkan ke Siswa. Jangan dibagikan ke murid.']);\n  }\n  return sh;\n}\n\nfunction qbSetting_(ss, key) {\n  var rows = qbRows_(qbSheet_(ss, 'Pengaturan'));\n  for (var i = 0; i < rows.length; i++) if (String(rows[i][0]).trim() === key) return String(rows[i][1] == null ? '' : rows[i][1]).trim();\n  return '';\n}\n\nfunction qbJson_(obj) {\n  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction qbKey_(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/\\s+/g, ' '); }\nfunction qbCode_(s) { return String(s == null ? '' : s).trim().toUpperCase(); }\nfunction qbYes_(v) { var t = String(v == null ? '' : v).trim().toUpperCase(); return t === '' || t === 'YA' || t === 'Y' || t === 'TRUE' || t === 'AKTIF' || v === true; }\nfunction qbNow_() { return new Date(); }\nfunction qbIso_(v) { var d = (v instanceof Date) ? v : new Date(v); return isNaN(d.getTime()) ? String(v || '') : d.toISOString(); }\n\nfunction qbSha_(text) {\n  var raw = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, text, Utilities.Charset.UTF_8);\n  // awalan h_ agar Google Sheets tidak pernah mengubah hash menjadi angka\n  return 'h_' + raw.map(function (b) { var v = (b < 0 ? b + 256 : b).toString(16); return v.length === 1 ? '0' + v : v; }).join('');\n}\n\nfunction qbRows_(sh) {\n  var last = sh.getLastRow();\n  if (last < 2) return [];\n  return sh.getRange(2, 1, last - 1, sh.getLastColumn()).getValues();\n}\n\nfunction qbLog_(ss, aksi, hasil, detail) {\n  try { qbSheet_(ss, 'Log').appendRow([qbNow_(), String(aksi || ''), String(hasil || ''), String(detail || '').slice(0, 300)]); } catch (e) {}\n}\n\nfunction doGet(e) {\n  var p = (e && e.parameter) || {};\n  try {\n    var ss = SpreadsheetApp.getActiveSpreadsheet();\n    if (p.action === 'verify') return qbJson_(qbVerify_(ss, p.number));\n    return qbJson_({ ok: true, app: 'QURABLOX_SHEETS', version: QB_VERSION });\n  } catch (err) {\n    return qbJson_({ ok: false, error: 'SERVER_ERROR', message: String(err) });\n  }\n}\n\nfunction doPost(e) {\n  var lock = LockService.getScriptLock();\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var body = {};\n  try {\n    body = JSON.parse((e && e.postData && e.postData.contents) || '{}');\n  } catch (err) {\n    return qbJson_({ ok: false, error: 'BAD_REQUEST' });\n  }\n  try {\n    lock.waitLock(20000);\n    Object.keys(QB_SHEETS).forEach(function (name) { qbSheet_(ss, name); });\n    var out;\n    switch (body.action) {\n      case 'ping': out = { ok: true, app: 'QURABLOX_SHEETS', version: QB_VERSION }; break;\n      case 'join': out = qbJoin_(ss, body); break;\n      case 'submitAttempt': out = qbSubmitAttempt_(ss, body); break;\n      case 'reportMateri': out = qbReportMateri_(ss, body); break;\n      case 'claimCertificate': out = qbClaimCertificate_(ss, body); break;\n      case 'verify': out = qbVerify_(ss, body.number); break;\n      case 'publishPack': out = qbPublishPack_(ss, body); break;\n      case 'getPack': out = qbGetPack_(ss, body); break;\n      default: out = { ok: false, error: 'UNKNOWN_ACTION' };\n    }\n    return qbJson_(out);\n  } catch (err) {\n    var code = String(err && err.message || err);\n    if (!/^[A-Z_]{6,}$/.test(code)) { qbLog_(ss, body.action, 'ERROR', code); code = 'SERVER_ERROR'; }\n    return qbJson_({ ok: false, error: code });\n  } finally {\n    try { lock.releaseLock(); } catch (e2) {}\n  }\n}\n\nfunction qbFindClass_(ss, code) {\n  var rows = qbRows_(ss.getSheetByName('Kelas'));\n  for (var i = 0; i < rows.length; i++) {\n    if (qbCode_(rows[i][0]) === code && code) return { name: String(rows[i][1] || code), active: qbYes_(rows[i][2]) };\n  }\n  return null;\n}\n\nfunction qbJoin_(ss, b) {\n  var code = qbCode_(b.classCode);\n  var cache = CacheService.getScriptCache();\n  var failKey = 'qbfail_' + code;\n  var fails = Number(cache.get(failKey) || 0);\n  if (fails >= 20) throw new Error('TOO_MANY_ATTEMPTS');\n  var cls = qbFindClass_(ss, code);\n  var siswa = ss.getSheetByName('Siswa');\n  var rows = qbRows_(siswa);\n  var key = qbKey_(b.name);\n  var found = -1;\n  for (var i = 0; i < rows.length; i++) {\n    if (qbCode_(rows[i][0]) === code && qbKey_(rows[i][1]) === key && qbYes_(rows[i][3])) { found = i; break; }\n  }\n  var pinCell = found >= 0 ? String(rows[found][2]).trim() : '';\n  var pinIn = String(b.pin == null ? '' : b.pin).trim();\n  var pinOk = found >= 0 && (pinCell === '' || pinCell === pinIn || (/^\\d+$/.test(pinIn) && pinCell !== '' && Number(pinCell) === Number(pinIn)));\n  if (!cls || !cls.active || found < 0 || !pinOk) {\n    cache.put(failKey, String(fails + 1), 900);\n    qbLog_(ss, 'join', 'GAGAL', code + ' / ' + key);\n    return { ok: false, error: 'JOIN_FAILED' };\n  }\n  var sid = String(rows[found][4] || '').trim();\n  if (!sid) { sid = Utilities.getUuid(); siswa.getRange(found + 2, 5).setValue(sid); }\n  var token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');\n  var exp = new Date(Date.now() + 120 * 24 * 3600 * 1000);\n  ss.getSheetByName('Sesi').appendRow([qbSha_(token), sid, code, String(rows[found][1]), qbNow_(), exp]);\n  qbLog_(ss, 'join', 'OK', code + ' / ' + rows[found][1]);\n  return { ok: true, token: token, student_id: sid, display_name: String(rows[found][1]), class_id: code, class_name: cls.name, grade_label: '', assignments: [] };\n}\n\nfunction qbAuth_(ss, token) {\n  if (!token || String(token).length < 32) throw new Error('TOKEN_INVALID');\n  var h = qbSha_(String(token));\n  var rows = qbRows_(ss.getSheetByName('Sesi'));\n  for (var i = rows.length - 1; i >= 0; i--) {\n    if (rows[i][0] === h) {\n      if (new Date(rows[i][5]).getTime() < Date.now()) throw new Error('TOKEN_INVALID');\n      var sid = rows[i][1], code = qbCode_(rows[i][2]);\n      var cls = qbFindClass_(ss, code);\n      var st = qbRows_(ss.getSheetByName('Siswa'));\n      for (var j = 0; j < st.length; j++) {\n        if (String(st[j][4]) === String(sid)) {\n          if (!qbYes_(st[j][3]) || !cls || !cls.active) throw new Error('TOKEN_INVALID');\n          return { studentId: String(sid), code: code, name: String(st[j][1]), className: cls.name };\n        }\n      }\n      throw new Error('TOKEN_INVALID');\n    }\n  }\n  throw new Error('TOKEN_INVALID');\n}\n\nfunction qbSubmitAttempt_(ss, b) {\n  var who = qbAuth_(ss, b.token);\n  var a = b.attempt || {};\n  var id = String(a.attempt_id || '');\n  if (id.length < 6 || id.length > 120) throw new Error('INVALID_ATTEMPT');\n  var sh = ss.getSheetByName('Hasil');\n  var rows = qbRows_(sh);\n  for (var i = 0; i < rows.length; i++) {\n    if (String(rows[i][1]) === id) {\n      if (String(rows[i][4]) !== who.studentId) throw new Error('ATTEMPT_CONFLICT');\n      return { ok: true, duplicate: true, attempt_id: id, server_score: Number(rows[i][8]) || 0, passed: rows[i][12] === 'LULUS', score_mismatch: false };\n    }\n  }\n  var answers = Array.isArray(a.answers) ? a.answers.slice(0, 500) : [];\n  var total = Math.max(answers.length, Number(a.total_questions) || 0);\n  var correct = answers.filter(function (x) { return x && x.is_correct; }).length;\n  var score = Math.max(0, Math.min(100, Math.round(Number(a.client_score) || 0)));\n  var meta = a.meta || {};\n  var kkm = Math.max(0, Math.min(100, Number(meta.kkm) || 75));\n  var challenge = a.mode === 'challenge';\n  var status = challenge ? (score >= kkm ? 'LULUS' : 'REMEDIAL') : 'LATIHAN';\n  var jawaban = answers.map(function (x, k) { return (k + 1) + '. ' + (x.chosen_text == null ? '(kosong)' : String(x.chosen_text)) + (x.is_correct ? ' ✓' : ' ✗'); }).join('\\n').slice(0, 45000);\n  sh.appendRow([qbNow_(), id, who.code, who.name, who.studentId, String(meta.packId || ''), String(a.building_id || ''), challenge ? 'Ujian' : 'Latihan', score, correct, total, kkm, status, String(a.finished_at || ''), Number(a.duration_sec) || '', jawaban, Number(meta.packVersion) || '']);\n  return { ok: true, duplicate: false, attempt_id: id, server_score: score, passed: status === 'LULUS', score_mismatch: false };\n}\n\nfunction qbReportMateri_(ss, b) {\n  var who = qbAuth_(ss, b.token);\n  var pack = String(b.packId || '');\n  var key = who.studentId + ':' + pack + ':' + String(b.buildingId || '');\n  var sh = ss.getSheetByName('Materi');\n  var rows = qbRows_(sh);\n  for (var i = 0; i < rows.length; i++) if (rows[i][1] === key) return { ok: true, duplicate: true };\n  sh.appendRow([qbNow_(), key, who.code, who.name, who.studentId, pack, String(b.buildingId || ''), String(b.readAt || '')]);\n  return { ok: true, duplicate: false };\n}\n\nvar QB_ALPHA = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';\nfunction qbCertValid_(no) {\n  var m = /^QBC-(\\d{4})-([A-Z]{1,3})-([0-9A-HJKMNP-TV-Z]{4})-([0-9A-HJKMNP-TV-Z]{4})([0-9A-HJKMNP-TV-Z])$/.exec(String(no || ''));\n  if (!m) return false;\n  var body = m[3] + m[4], s = 0;\n  for (var i = 0; i < body.length; i++) s += QB_ALPHA.indexOf(body.charAt(i)) * (i + 1);\n  return QB_ALPHA.charAt(s % 32) === m[5];\n}\nfunction qbCertNew_() {\n  var body = '', s = 0;\n  for (var i = 0; i < 8; i++) body += QB_ALPHA.charAt(Math.floor(Math.random() * 32));\n  for (var k = 0; k < 8; k++) s += QB_ALPHA.indexOf(body.charAt(k)) * (k + 1);\n  return 'QBC-' + new Date().getFullYear() + '-GSH-' + body.slice(0, 4) + '-' + body.slice(4) + QB_ALPHA.charAt(s % 32);\n}\n\nfunction qbClaimCertificate_(ss, b) {\n  var who = qbAuth_(ss, b.token);\n  var c = b.client || {};\n  var pack = String(c.pack_id || '');\n  var sh = ss.getSheetByName('Sertifikat');\n  var rows = qbRows_(sh);\n  for (var i = 0; i < rows.length; i++) {\n    if (String(rows[i][8]) === who.studentId && String(rows[i][9]) === String(b.achievementId || '') && String(rows[i][1]).toUpperCase() !== 'DICABUT') {\n      return { ok: true, duplicate: true, status: 'VERIFIED', number: String(rows[i][0]), issued_at: qbIso_(rows[i][7]) };\n    }\n  }\n  // Cek silang dengan tab Hasil: setiap gedung wajib punya ujian LULUS, dan nilai minimal bila diminta\n  var check = c.check || {};\n  var need = Array.isArray(check.buildingIds) ? check.buildingIds.map(String) : [];\n  var hasil = qbRows_(ss.getSheetByName('Hasil')).filter(function (r) { return String(r[4]) === who.studentId && (!pack || String(r[5]) === pack) && r[7] === 'Ujian'; });\n  var best = {}, passed = {};\n  hasil.forEach(function (r) { var g = String(r[6]); best[g] = Math.max(best[g] || 0, Number(r[8]) || 0); if (r[12] === 'LULUS') passed[g] = true; });\n  var missing = need.filter(function (g) { return check.requirePassAll && !passed[g]; });\n  var avg = need.length ? Math.round(need.reduce(function (s, g) { return s + (best[g] || 0); }, 0) / need.length) : 0;\n  var minOk = true;\n  if (check.minScore != null && need.length) {\n    minOk = check.scope === 'each' ? need.every(function (g) { return (best[g] || 0) >= Number(check.minScore); }) : avg >= Number(check.minScore);\n  }\n  if (!need.length || missing.length || !minOk) {\n    return { ok: false, status: 'REJECTED', evaluation: { missing: missing, average: avg, minScore: check.minScore } };\n  }\n  var no = String(b.number || '').toUpperCase();\n  var used = rows.some(function (r) { return String(r[0]) === no; });\n  if (!qbCertValid_(no) || used) no = qbCertNew_();\n  var now = qbNow_();\n  sh.appendRow([no, 'VERIFIED', who.name, who.code, who.className, String(c.package_title || pack), String(c.award_title || ''), now, who.studentId, String(b.achievementId || ''), '']);\n  return { ok: true, duplicate: false, status: 'VERIFIED', number: no, issued_at: qbIso_(now) };\n}\n\nfunction qbVerify_(ss, number) {\n  var no = String(number || '').trim().toUpperCase().slice(0, 40);\n  var rows = qbRows_(ss.getSheetByName('Sertifikat') || qbSheet_(ss, 'Sertifikat'));\n  for (var i = 0; i < rows.length; i++) {\n    if (String(rows[i][0]).toUpperCase() === no && no) {\n      var revoked = String(rows[i][1]).toUpperCase() === 'DICABUT' || String(rows[i][1]).toUpperCase() === 'REVOKED';\n      return { found: true, number: String(rows[i][0]), status: revoked ? 'REVOKED' : 'VERIFIED', student_name: String(rows[i][2]), class_name: String(rows[i][4]),\n        package_title: String(rows[i][5]), award_title: String(rows[i][6]), issued_at: qbIso_(rows[i][7]), revoked_at: revoked ? qbIso_(qbNow_()) : null };\n    }\n  }\n  return { found: false };\n}\n\n\n// ------------------------------------------------------------------ Paket materi & soal (Terbitkan ke Siswa)\nfunction qbPackMeta_(sh) {\n  var last = sh.getLastRow();\n  if (last < 2) return [];\n  return sh.getRange(2, 1, last - 1, 6).getValues().map(function (r, i) {\n    return { row: i + 2, versi: Number(r[0]) || 0, diterbitkan: r[1], paket: String(r[2]), judul: String(r[3]), ke: Number(r[4]) || 0, n: Number(r[5]) || 0 };\n  });\n}\n\nfunction qbPublishPack_(ss, b) {\n  var code = qbSetting_(ss, 'kode_guru');\n  if (code.length < 6) throw new Error('KODE_GURU_BELUM_DIATUR');\n  var cache = CacheService.getScriptCache();\n  var fails = Number(cache.get('qbpub_fail') || 0);\n  if (fails >= 10) throw new Error('TOO_MANY_ATTEMPTS');\n  if (String(b.teacherCode || '') !== code) {\n    cache.put('qbpub_fail', String(fails + 1), 900);\n    qbLog_(ss, 'publishPack', 'KODE SALAH', '');\n    throw new Error('KODE_GURU_SALAH');\n  }\n  var pack = b.pack;\n  if (!pack || typeof pack !== 'object' || !pack.buildings || typeof pack.buildings !== 'object') throw new Error('PAKET_TIDAK_VALID');\n  var json = JSON.stringify(pack);\n  if (json.length > 5000000) throw new Error('PAKET_TERLALU_BESAR');\n  var sh = qbSheet_(ss, 'Paket');\n  var meta = qbPackMeta_(sh);\n  var latest = meta.reduce(function (m, r) { return Math.max(m, r.versi); }, 0);\n  var versi = latest + 1;\n  var chunks = [];\n  for (var i = 0; i < json.length; i += QB_CHUNK) chunks.push('~' + json.slice(i, i + QB_CHUNK)); // awalan ~ agar tidak dibaca sebagai rumus/angka\n  var now = qbNow_();\n  var judul = [pack.subjectName, pack.gradeLabel].filter(function (x) { return x; }).join(' — ');\n  var rows = chunks.map(function (c, k) { return [versi, now, String(pack.id || ''), judul, k + 1, chunks.length, c]; });\n  sh.getRange(sh.getLastRow() + 1, 1, rows.length, 7).setValues(rows);\n  // Simpan hanya beberapa versi terakhir agar Sheet tetap ringan\n  var old = meta.filter(function (r) { return r.versi <= versi - QB_KEEP_VERSIONS; });\n  if (old.length) sh.deleteRows(2, old.length);\n  qbLog_(ss, 'publishPack', 'OK', 'versi ' + versi + ' • ' + json.length + ' karakter • ' + chunks.length + ' potongan');\n  return { ok: true, version: versi, chunks: chunks.length, bytes: json.length, published_at: qbIso_(now) };\n}\n\nfunction qbGetPack_(ss, b) {\n  var sh = qbSheet_(ss, 'Paket');\n  var meta = qbPackMeta_(sh);\n  var latest = meta.reduce(function (m, r) { return Math.max(m, r.versi); }, 0);\n  if (!latest) return { ok: true, version: 0, empty: true };\n  var parts = meta.filter(function (r) { return r.versi === latest; }).sort(function (x, y) { return x.ke - y.ke; });\n  var info = { ok: true, version: latest, published_at: qbIso_(parts[0].diterbitkan), pack_id: parts[0].paket, title: parts[0].judul };\n  if (Number(b.haveVersion) >= latest) { info.upToDate = true; return info; }\n  if (parts.length !== parts[0].n) throw new Error('PAKET_RUSAK');\n  var data = sh.getRange(parts[0].row, 7, parts.length, 1).getValues().map(function (r) { return String(r[0]).replace(/^~/, ''); }).join('');\n  info.pack = JSON.parse(data);\n  return info;\n}\n";
 
     /* =======================================================================
        MODULE 19: ONLINE UI — Panel Guru (akun, sekolah, kelas, siswa, paket,
@@ -21030,6 +21038,8 @@ module.exports = QRCode;
               <button type="button" class="ts-btn" onclick="OnlineUI.restoreFromIdb()"><i class="fa-solid fa-life-ring"></i> Pulihkan dari salinan IndexedDB</button>
             </div>
           </div>
+
+          ${cfg && cfg.type === "sheets" ? `<div class="ts-card" id="onPublishCard" style="border-color:rgba(245,197,66,.6)"></div>` : ""}
 
           <div class="ts-card">
             <h4 class="font-bold text-white mb-1"><i class="fa-solid fa-plug text-[#F5C542]"></i> Pilih penyimpanan nilai online</h4>
@@ -21106,6 +21116,7 @@ module.exports = QRCode;
           </div>`;
         host.querySelectorAll('input[name="onBackendMode"]').forEach(r => r.addEventListener("change", () => { st.mode = r.value; renderTeacherTab(); }));
         if (sess && cfg && cfg.type !== "sheets") refreshTeacherData();
+        if (cfg && cfg.type === "sheets" && typeof PackSync !== "undefined") { PackSync.renderCard(); PackSync.refreshBadge(); }
       }
 
       async function saveSheetsConfig() {
@@ -21443,6 +21454,198 @@ module.exports = QRCode;
     if (typeof window !== "undefined") window.OnlineUI = OnlineUI;
 
     /* =======================================================================
+       MODULE 22: PACK SYNC (mode Google Sheets) — "Terbitkan ke Siswa"
+       Guru mengedit materi/soal/kunci/KKM/syarat Grand Finale di Teacher Studio,
+       lalu menerbitkannya ke tab Paket di Google Sheet (dilindungi kode_guru).
+       Perangkat murid memeriksa versi terbaru saat game dibuka, saat menekan
+       "Main Sekarang", dan saat koneksi pulih — lalu memasangnya otomatis.
+       Ujian yang sedang berjalan tidak pernah diubah.
+       ======================================================================= */
+    const PackSync = (() => {
+      const KEY = "qurablox_sheets_pack_installed";
+      const esc = (v) => QBUtil.escapeHtml(v);
+      let checking = false;
+      let lastCheck = null;
+
+      function getInstalled() { try { return JSON.parse(localStorage.getItem(KEY) || "null") || null; } catch (e) { return null; } }
+      function setInstalled(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
+      function isEnabled() { return typeof BackendConfig !== "undefined" && BackendConfig.isSheets(); }
+
+      function snapshot(pack) {
+        const snap = TeacherFinale.packSnapshot(pack);
+        return Object.assign({ id: pack.id }, snap);
+      }
+      function contentHash(pack) {
+        try { return QBUtil.hashStr(JSON.stringify(snapshot(pack))); } catch (e) { return ""; }
+      }
+      function hasUnpublishedChanges() {
+        if (!isEnabled()) return false;
+        const pack = ContentManager.getActivePack();
+        const inst = getInstalled();
+        if (!inst || inst.packId !== pack.id) return true;
+        return inst.hash !== contentHash(pack);
+      }
+
+      // ---------- Guru ----------
+      async function publish(teacherCode) {
+        if (!isEnabled()) throw Object.assign(new Error("Mode Google Sheets belum aktif."), { code: "NOT_SHEETS" });
+        const code = String(teacherCode || "").trim();
+        if (code.length < 6) throw Object.assign(new Error("Masukkan kode guru (minimal 6 karakter) sesuai tab Pengaturan."), { code: "KODE_GURU_SALAH" });
+        const d = StorageManager.getData();
+        const pack = d.platform.packs[d.platform.activePackId];
+        const payload = snapshot(pack);
+        const sentHash = QBUtil.hashStr(JSON.stringify(payload));
+        const res = await BackendClient.sheetsCall("publishPack", { teacherCode: code, pack: payload }, 90000);
+        // Baca ulang data (guru mungkin mengedit lagi selama proses kirim) — jangan menimpa perubahan baru
+        const d2 = StorageManager.getData();
+        const pk = d2.platform.packs[pack.id] || pack;
+        pk.version = res.version;
+        pk.publishedAt = res.published_at;
+        pk.sheetsPublished = { version: res.version, at: res.published_at, bytes: res.bytes };
+        StorageManager.setData(d2);
+        StorageManager.syncCurriculumFromStorage();
+        setInstalled({ packId: pack.id, version: res.version, hash: sentHash, at: res.published_at });
+        refreshBadge();
+        return res;
+      }
+
+      async function remoteInfo() {
+        if (!isEnabled()) return null;
+        try { return await BackendClient.sheetsCall("getPack", { haveVersion: 1e9 }, 20000); } catch (e) { return { error: e.message }; }
+      }
+
+      // ---------- Murid (dan semua perangkat) ----------
+      function busy() {
+        try {
+          if (typeof GameApp !== "undefined" && GameApp.getActiveQuizSession && GameApp.getActiveQuizSession()) return true;
+          const ids = ["modalBuildingSession", "modalGrandFinale", "modalTeacherDashboard"];
+          if (ids.some(id => { const el = document.getElementById(id); return el && !el.classList.contains("hidden"); })) return true;
+          if (document.querySelector('[id^="vpSessionModal_"]:not(.hidden)')) return true;
+        } catch (e) {}
+        return false;
+      }
+
+      function validatePack(p) {
+        if (!p || typeof p !== "object" || !p.buildings || typeof p.buildings !== "object") return "Isi paket tidak valid.";
+        const list = Object.values(p.buildings);
+        if (!list.length) return "Paket tidak berisi gedung.";
+        for (const b of list) if (!b || typeof b !== "object" || (b.questions && !Array.isArray(b.questions))) return "Data gedung tidak valid.";
+        return null;
+      }
+
+      function install(remote, version, publishedAt) {
+        const err = validatePack(remote);
+        if (err) throw new Error(err);
+        const d = StorageManager.getData();
+        const id = String(remote.id || "tajwid_ix").replace(/[^a-z0-9_-]/gi, "").slice(0, 40) || "tajwid_ix";
+        const prev = d.platform.packs[id] || {};
+        const merged = Object.assign({}, prev, {
+          id, subjectName: remote.subjectName || prev.subjectName || "Mata Pelajaran", gradeLabel: remote.gradeLabel || prev.gradeLabel || "",
+          description: remote.description || prev.description || "", authorName: remote.authorName || "", authorSchool: remote.authorSchool || "",
+          buildings: remote.buildings, completion: remote.completion || prev.completion || null,
+          version, publishedAt, sheetsLive: { version, publishedAt, installedAt: new Date().toISOString() }
+        });
+        d.platform.packs[id] = ContentManager.normalizePack(merged, id);
+        d.platform.activePackId = id;
+        if (remote.quizSettings) d.quizSettings = ContentManager.normalizeQuizSettings(Object.assign({}, d.quizSettings, remote.quizSettings));
+        const res = StorageManager.setData(d);
+        if (res && res.success === false) throw new Error("Penyimpanan perangkat penuh.");
+        StorageManager.syncCurriculumFromStorage();
+        try { if (GameApp.refreshContentEverywhere) GameApp.refreshContentEverywhere(); } catch (e) {}
+        try { GrandFinale.refreshHudBadges(); } catch (e) {}
+        setInstalled({ packId: id, version, hash: contentHash(d.platform.packs[id]), at: publishedAt });
+        return id;
+      }
+
+      async function checkForUpdate(opts) {
+        const o = opts || {};
+        if (!isEnabled()) return { skipped: "not_sheets" };
+        if (navigator.onLine === false) return { skipped: "offline" };
+        if (checking) return { skipped: "running" };
+        if (busy()) return { skipped: "busy" };
+        checking = true;
+        try {
+          const inst = getInstalled();
+          const res = await BackendClient.sheetsCall("getPack", { haveVersion: inst ? Number(inst.version) || 0 : 0 }, 45000);
+          lastCheck = { at: new Date().toISOString(), version: res.version || 0 };
+          if (!res.pack) return { upToDate: true, version: res.version || 0 };
+          if (busy()) return { skipped: "busy" };
+          install(res.pack, res.version, res.published_at);
+          if (!o.silent && typeof PlatformBoot !== "undefined") {
+            PlatformBoot.systemToast(`<b>Materi & soal terbaru dimuat</b><span>${esc(res.title || "Paket")} • versi ${esc(res.version)} dari guru.</span>`, 6000);
+          }
+          return { installed: true, version: res.version };
+        } catch (e) {
+          console.warn("PackSync.checkForUpdate", e);
+          return { error: e.message };
+        } finally { checking = false; }
+      }
+
+      function refreshBadge() {
+        const btn = document.getElementById("tabBtn_online");
+        if (!btn) return;
+        let dot = btn.querySelector("[data-pack-dot]");
+        const show = isEnabled() && hasUnpublishedChanges();
+        if (show && !dot) { dot = document.createElement("span"); dot.setAttribute("data-pack-dot", "1"); dot.className = "ml-1 w-2.5 h-2.5 rounded-full bg-[#F5C542] inline-block"; dot.title = "Ada perubahan materi/soal yang belum diterbitkan ke siswa"; btn.appendChild(dot); }
+        if (!show && dot) dot.remove();
+      }
+
+      // ---------- Kartu di tab Online & Kelas ----------
+      async function renderCard() {
+        const host = document.getElementById("onPublishCard");
+        if (!host) return;
+        const pack = ContentManager.getActivePack();
+        const pending = hasUnpublishedChanges();
+        host.innerHTML = `
+          <h4 class="font-bold text-white mb-1"><i class="fa-solid fa-paper-plane text-[#F5C542]"></i> Terbitkan Materi &amp; Soal ke Siswa</h4>
+          <p class="text-[11px] text-[#D9BE96] mb-2">Ubah materi, bank soal, kunci jawaban, pengaturan ujian, atau syarat Grand Finale di tab-tab Teacher Studio, lalu tekan tombol di bawah. Perangkat siswa memuat versi terbaru saat game dibuka atau saat menekan <b>Main Sekarang</b> (perlu internet sekali). Ujian yang sedang dikerjakan tidak berubah.</p>
+          <div class="grid sm:grid-cols-3 gap-2 text-[11px]">
+            <div class="ts-stat"><span>Paket aktif</span><b>${esc(pack.subjectName)} ${esc(pack.gradeLabel)}</b></div>
+            <div class="ts-stat"><span>Versi terbit di Google Sheet</span><b id="onPubRemote">memeriksa…</b></div>
+            <div class="ts-stat"><span>Perubahan di perangkat ini</span><b id="onPubPending" style="color:${pending ? "#F5C542" : "#6ee7b7"}">${pending ? "ADA yang belum diterbitkan" : "Sudah sama dengan versi terbit"}</b></div>
+          </div>
+          <div class="ts-row mt-2">
+            <label class="ts-label !flex-row items-center gap-2">Kode guru <input id="onPubCode" type="password" class="ts-input w-40" autocomplete="off" placeholder="dari tab Pengaturan"></label>
+            <button type="button" id="onPubBtn" class="ts-btn gold" onclick="PackSync.publishFromUi()"><i class="fa-solid fa-paper-plane"></i> Terbitkan ke Siswa</button>
+          </div>
+          <p class="text-[10px] text-[#D9BE96] mt-1">Kode guru diisi sendiri di Google Sheet: tab <b>Pengaturan</b>, baris <b>kode_guru</b>, kolom <b>nilai</b> (minimal 6 karakter). Jangan dibagikan ke siswa.</p>`;
+        const info = await remoteInfo();
+        const el = document.getElementById("onPubRemote");
+        if (!el) return;
+        if (!info || info.error) el.textContent = info && info.error ? "tidak dapat diperiksa: " + info.error : "-";
+        else if (!info.version) el.textContent = "belum pernah diterbitkan";
+        else el.textContent = `v${info.version} • ${CertificateGenerator.formatDateId(info.published_at)}${info.title ? " • " + info.title : ""}`;
+      }
+
+      async function publishFromUi() {
+        const btn = document.getElementById("onPubBtn");
+        const code = (document.getElementById("onPubCode") || {}).value || "";
+        const toast = (m, k) => { if (typeof TeacherStudioPro !== "undefined") TeacherStudioPro.toast(m, k); };
+        const pack = ContentManager.getActivePack();
+        if (!confirm(`Terbitkan "${pack.subjectName} ${pack.gradeLabel}" ke semua siswa?\n\nSiswa akan memakai materi, soal, kunci jawaban, dan pengaturan ini mulai ujian berikutnya.`)) return null;
+        if (btn) { btn.disabled = true; btn.classList.add("opacity-60"); }
+        try {
+          const r = await publish(code);
+          toast(`Terbit sebagai versi ${r.version}. Siswa menerimanya saat membuka game / menekan Main Sekarang.`, "ok");
+          renderCard();
+          return r;
+        } catch (e) {
+          toast(e.message, "bad");
+          return null;
+        } finally { if (btn) { btn.disabled = false; btn.classList.remove("opacity-60"); } }
+      }
+
+      function start() {
+        if (!isEnabled()) return;
+        checkForUpdate();
+        window.addEventListener("online", () => setTimeout(() => checkForUpdate(), 1500));
+      }
+
+      return { start, publish, publishFromUi, checkForUpdate, install, renderCard, refreshBadge, hasUnpublishedChanges, getInstalled, contentHash, remoteInfo, getLastCheck: () => lastCheck };
+    })();
+    if (typeof window !== "undefined") window.PackSync = PackSync;
+
+    /* =======================================================================
        MODULE 21: MENU JEDA (Permainan Dijeda), RIWAYATKU & MAIN LAGI (Putaran Baru)
        Main Lagi mengulang petualangan (misi, kitab, kuis warga, status gedung untuk
        Grand Finale) TANPA menghapus koin, XP, level, pakaian, riwayat nilai, maupun
@@ -21670,6 +21873,7 @@ module.exports = QRCode;
           try { await BackendConfig.loadDeploymentFile(); } catch (e) {}
           if (!pre || !pre.checked) { try { await OfflineStore.initAndMigrate(); } catch (e) { console.warn("IDB migrate", e); } }
           try { SyncEngine.start(); } catch (e) { console.warn("SyncEngine.start", e); }
+          try { if (typeof PackSync !== "undefined") PackSync.start(); } catch (e) { console.warn("PackSync.start", e); }
           try { NetStatus.render(); } catch (e) {}
           try { await OnlineUI.handleVerifyParam(); } catch (e) {}
           if (pre && pre.restored) systemToast("<b>Data dipulihkan</b><span>Data penyimpanan browser hilang/rusak dan telah dipulihkan dari salinan IndexedDB.</span>", 9000);
