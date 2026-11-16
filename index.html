@@ -475,6 +475,168 @@
     .qb-landing-zone-card:hover { transform: translateY(-4px); }
     @media (prefers-reduced-motion: reduce) { .qb-fade-up, .qb-pop, .qb-modal-shell, .qb-feedback, .qb-modal-accent { animation: none !important; } }
 
+    /* ===================== v6: kontrol HP ===================== */
+    #btnMobileJump, #btnMobileAction, #mobileJoystickContainer, .qb-hud-btn, .qb-pause-btn, #gameHudContainer button { touch-action: manipulation; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+    #btnMobileJump, #btnMobileAction { touch-action: none; }
+    #btnMobileJump.qb-pressed, #btnMobileAction.qb-pressed { transform: scale(.86); filter: brightness(1.35); }
+    #btnMobileJump { position: relative; }
+    #btnMobileJump::after, #btnMobileAction::after { content: ""; position: absolute; inset: -12px; border-radius: 999px; }
+    #btnMobileAction { position: relative; }
+    #mobileJoystickContainer::after { content: ""; position: absolute; inset: -26px; border-radius: 999px; }
+    #hudInteractionPrompt.opacity-0, #hudInteractionPrompt.opacity-0 * { pointer-events: none !important; }
+    #qbActionHint { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 9.5rem); transform: translate(-50%, 12px); opacity: 0; pointer-events: none; z-index: 40; max-width: min(92vw, 360px); padding: .55rem .85rem; border-radius: 14px; font-size: 12px; line-height: 1.35; color: #101D38; background: #F5C542; box-shadow: 0 10px 30px rgba(0,0,0,.35); text-align: center; transition: opacity .2s, transform .2s; }
+    #qbActionHint.show { opacity: 1; transform: translate(-50%, 0); }
+    @media (max-width: 767px) {
+      #gameHudContainer .qb-net-pill { max-width: 46vw; }
+      #gameHudContainer .qb-net-pill > span:nth-child(n+3), #gameHudContainer .qb-net-pill > i { display: none; }
+    }
+    [data-music-toggle].is-off { opacity: .6; }
+    .qb-music-btn.is-off i { color: #94a3b8; }
+
+    /* ===================== v6: beranda ringkas ===================== */
+    .qb-hero-actions { display: flex; flex-direction: column; align-items: flex-start; gap: .85rem; }
+    .qb-hero-play { min-width: min(100%, 300px); }
+    .qb-hero-sub { display: flex; flex-wrap: wrap; gap: .6rem; }
+    .qb-hero-chip { display: inline-flex; align-items: center; gap: .5rem; padding: .7rem 1.1rem; border-radius: 1rem; background: rgba(32,56,88,.9); border: 1px solid rgba(213,169,79,.35); color: #EDE3D0; font-weight: 800; font-size: .875rem; transition: transform .15s, border-color .15s, background .15s; }
+    .qb-hero-chip:hover { transform: translateY(-2px); border-color: rgba(213,169,79,.8); background: #203858; }
+    @media (max-width: 480px) { .qb-hero-play { width: 100%; } .qb-hero-sub { width: 100%; } .qb-hero-chip { flex: 1 1 0; justify-content: center; padding: .7rem .6rem; font-size: .8rem; } }
+    #hero { min-height: calc(100vh - 72px); }
+
+    /* ===================== v6: jendela Info Game ===================== */
+    .qb-info { position: fixed; inset: 0; z-index: 45; display: flex; align-items: center; justify-content: center; padding: 1rem; perspective: 1400px; }
+    .qb-info.hidden { display: none; }
+    .qb-info-backdrop { position: absolute; inset: 0; background: radial-gradient(circle at 50% 30%, rgba(36,123,105,.25), rgba(11,19,36,.92) 60%); backdrop-filter: blur(6px); opacity: 0; transition: opacity .3s; }
+    .qb-info.open .qb-info-backdrop { opacity: 1; }
+    .qb-info-shell { position: relative; width: min(980px, 100%); max-height: min(88vh, 900px); display: flex; flex-direction: column; border-radius: 28px; background: linear-gradient(160deg, rgba(20,36,68,.98), rgba(11,19,36,.98)); border: 1.5px solid rgba(213,169,79,.55); box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06); overflow: hidden; transform-origin: 50% 100%; opacity: 0; transform: translateY(40px) rotateX(18deg) scale(.92); }
+    .qb-info.open .qb-info-shell { animation: qbInfoIn .55s cubic-bezier(.2,1.25,.35,1) forwards; }
+    .qb-info.closing .qb-info-shell { animation: qbInfoOut .25s ease-in forwards; }
+    @keyframes qbInfoIn { 0% { opacity: 0; transform: translateY(40px) rotateX(18deg) scale(.92); } 100% { opacity: 1; transform: none; } }
+    @keyframes qbInfoOut { to { opacity: 0; transform: translateY(24px) scale(.96); } }
+    .qb-info-glow { position: absolute; inset: -2px; border-radius: 30px; pointer-events: none; background: conic-gradient(from var(--qbg, 0deg), transparent 0 70%, rgba(245,197,66,.55) 80%, transparent 90%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; padding: 2px; animation: qbGlowSpin 6s linear infinite; opacity: .8; }
+    @property --qbg { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+    @keyframes qbGlowSpin { to { --qbg: 360deg; } }
+    .qb-info-head { display: flex; align-items: center; gap: .8rem; padding: 1rem 1.2rem .6rem; }
+    .qb-info-badge { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #101D38; background: linear-gradient(135deg, #F5C542, #D5A94F); box-shadow: 0 6px 18px rgba(213,169,79,.35); animation: qbBadgeBob 2.4s ease-in-out infinite; flex: none; }
+    @keyframes qbBadgeBob { 50% { transform: translateY(-3px) rotate(-4deg); } }
+    .qb-info-x { margin-left: auto; width: 38px; height: 38px; border-radius: 999px; background: #203858; color: #D9BE96; flex: none; }
+    .qb-info-x:hover { color: #fff; }
+    .qb-info-tabs { position: relative; display: flex; gap: .3rem; padding: 0 1rem .4rem; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid #203858; }
+    .qb-info-tabs::-webkit-scrollbar { display: none; }
+    .qb-info-tabs button { flex: none; display: inline-flex; align-items: center; gap: .45rem; padding: .55rem .85rem; border-radius: 12px; font-size: .8rem; font-weight: 800; color: #D9BE96; transition: color .2s, background .2s; }
+    .qb-info-tabs button:hover { color: #fff; background: rgba(32,56,88,.6); }
+    .qb-info-tabs button.active { color: #F5C542; }
+    .qb-info-ink { position: absolute; left: 0; bottom: 0; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #F5C542, #6ee7b7); transition: transform .35s cubic-bezier(.3,1.3,.5,1), width .35s; }
+    .qb-info-body { flex: 1; overflow-y: auto; padding: 1rem 1.2rem 1.2rem; overscroll-behavior: contain; }
+    .qb-info-panel.qb-panel-in > * { animation: qbPanelIn .45s cubic-bezier(.2,1,.35,1) both; }
+    @keyframes qbPanelIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    .qb-info-foot { display: flex; flex-wrap: wrap; gap: .6rem; padding: .8rem 1.2rem 1rem; border-top: 1px solid #203858; background: rgba(11,19,36,.6); }
+    .qb-info-cta { flex: 1 1 200px; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .75rem 1rem; border-radius: 14px; font-weight: 900; color: #101D38; background: linear-gradient(135deg, #F5C542, #D5A94F); box-shadow: 0 4px 0 #9c7a2f; }
+    .qb-info-cta:active { transform: translateY(2px); box-shadow: 0 2px 0 #9c7a2f; }
+    .qb-info-cta.ghost { background: #203858; color: #EDE3D0; box-shadow: 0 4px 0 #0b1324; border: 1px solid rgba(213,169,79,.35); }
+    .qb-info-lead { font-size: .85rem; color: #D9BE96; margin-bottom: .9rem; line-height: 1.5; }
+    .qb-zone-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: .75rem; }
+    .qb-zone-card { display: flex; align-items: center; gap: .8rem; padding: .85rem; border-radius: 18px; background: linear-gradient(135deg, color-mix(in srgb, var(--zc) 22%, #101D38), #101D38); border: 1px solid color-mix(in srgb, var(--zc) 55%, transparent); animation: qbZoneIn .5s cubic-bezier(.2,1.3,.4,1) both; }
+    @keyframes qbZoneIn { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: none; } }
+    .qb-zone-num { width: 42px; height: 42px; flex: none; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; color: #fff; background: var(--zc); box-shadow: inset 0 -3px 0 rgba(0,0,0,.25); }
+    .qb-zone-card h4 { color: #fff; font-weight: 900; font-size: .95rem; line-height: 1.2; }
+    .qb-zone-ch { font-size: .65rem; font-weight: 900; letter-spacing: .06em; color: var(--zt); }
+    .qb-zone-sub { font-size: .72rem; color: #D9BE96; margin-top: .1rem; }
+    .qb-zone-state { flex: none; display: flex; flex-direction: column; align-items: center; gap: .15rem; font-size: .6rem; font-weight: 800; color: #94a3b8; text-align: center; width: 62px; }
+    .qb-zone-state i { font-size: 1rem; color: #D5A94F; }
+    .qb-zone-state.ok, .qb-zone-state.ok i { color: #6ee7b7; }
+    .qb-zone-finale { margin-top: .9rem; padding: .8rem 1rem; border-radius: 16px; font-size: .85rem; color: #EDE3D0; background: rgba(213,169,79,.12); border: 1px dashed rgba(213,169,79,.5); animation: qbZoneIn .5s ease-out both; }
+    .qb-zone-finale i { color: #F5C542; margin-right: .3rem; }
+    /* bagian beranda lama yang dipindah ke dalam Info Game: dibuat ringkas */
+    .qb-in-info { padding: 0 !important; background: transparent !important; border: 0 !important; backdrop-filter: none !important; min-height: 0 !important; }
+    .qb-in-info > div > .text-center:first-child { margin-bottom: 1rem !important; }
+    .qb-in-info h2 { font-size: 1.35rem !important; margin-bottom: .4rem !important; }
+    .qb-in-info .max-w-3xl > span:first-child { display: none; }
+    @media (max-width: 640px) { .qb-info { padding: 0; align-items: stretch; } .qb-info-shell { max-height: none; height: 100%; border-radius: 0; } .qb-info-glow { display: none; } }
+
+    /* ===================== v6: animasi pembuka ===================== */
+    .qbi { position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column; background: #0b1324; color: #EDE3D0; opacity: 0; transition: opacity .35s; overflow: hidden; }
+    .qbi.hidden { display: none; }
+    .qbi.open { opacity: 1; }
+    .qbi.closing { opacity: 0; }
+    .qbi-stage-wrap { position: relative; flex: 1 1 auto; min-height: 0; }
+    .qbi-stage { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .qbi.paused * { animation-play-state: paused !important; }
+    .qbi-skip { position: absolute; top: calc(env(safe-area-inset-top, 0px) + .8rem); right: .9rem; z-index: 3; padding: .55rem 1rem; border-radius: 999px; font-weight: 900; font-size: .85rem; color: #fff; background: rgba(16,29,56,.75); border: 1.5px solid rgba(255,255,255,.4); backdrop-filter: blur(6px); }
+    .qbi-skip:hover { background: rgba(16,29,56,.95); }
+    .qbi-caption { flex: none; position: relative; z-index: 2; padding: .85rem 1rem calc(env(safe-area-inset-bottom, 0px) + .8rem); background: linear-gradient(180deg, rgba(11,19,36,.92), #0b1324); border-top: 2px solid rgba(213,169,79,.5); box-shadow: 0 -12px 30px rgba(0,0,0,.25); }
+    .qbi-caption > * { max-width: 860px; margin-left: auto; margin-right: auto; }
+    .qbi-cap-head { display: flex; align-items: center; gap: .6rem; }
+    .qbi-step { flex: none; padding: .2rem .6rem; border-radius: 999px; font-size: .7rem; font-weight: 900; color: #101D38; background: #F5C542; }
+    .qbi-caption h3 { font-family: inherit; font-weight: 900; font-size: clamp(1.05rem, 2.6vw, 1.5rem); color: #fff; line-height: 1.2; }
+    .qbi-caption p { margin-top: .3rem; font-size: clamp(.85rem, 2vw, 1.05rem); line-height: 1.45; color: #EDE3D0; }
+    .qbi-cap-in .qbi-cap-head, .qbi-cap-in p { animation: qbPanelIn .45s ease-out both; }
+    .qbi-cap-in p { animation-delay: .08s; }
+    .qbi-bar { display: flex; align-items: center; gap: .5rem; margin-top: .6rem; }
+    .qbi-ctl { width: 40px; height: 40px; flex: none; border-radius: 999px; background: #203858; color: #EDE3D0; border: 1px solid rgba(213,169,79,.35); }
+    .qbi-ctl:hover { color: #F5C542; }
+    .qbi-dots { flex: 1; display: flex; gap: .3rem; align-items: center; }
+    .qbi-dot { flex: 1; height: 8px; border-radius: 99px; background: rgba(255,255,255,.18); overflow: hidden; position: relative; padding: 0; min-width: 14px; }
+    .qbi-dot.done { background: #D5A94F; }
+    .qbi-dot.on span { position: absolute; inset: 0; background: #F5C542; transform-origin: 0 50%; animation-name: qbiProg; animation-timing-function: linear; animation-fill-mode: both; }
+    @keyframes qbiProg { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    .qbi-end { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .7rem; }
+    .qbi-end.hidden { display: none; }
+    .qbi-go { flex: 1 1 220px; padding: .85rem 1rem; border-radius: 16px; font-weight: 900; font-size: 1.05rem; color: #101D38; background: linear-gradient(135deg, #F5C542, #D5A94F); box-shadow: 0 5px 0 #9c7a2f; animation: qbiGoPulse 1.4s ease-in-out infinite; }
+    @keyframes qbiGoPulse { 50% { transform: scale(1.03); box-shadow: 0 5px 0 #9c7a2f, 0 0 0 8px rgba(245,197,66,.18); } }
+    .qbi-again { padding: .85rem 1rem; border-radius: 16px; font-weight: 800; color: #EDE3D0; background: #203858; border: 1px solid rgba(213,169,79,.35); }
+    .qbi-title-card { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); text-align: center; pointer-events: none; opacity: 0; }
+    .qbi-title-card.show { animation: qbiTitle 3.2s ease-in-out .2s both; }
+    .qbi-title-card p { font-weight: 900; letter-spacing: .3em; font-size: clamp(.7rem, 1.8vw, .95rem); color: #101D38; }
+    .qbi-title-card h2 { font-weight: 900; font-size: clamp(1.4rem, 4.6vw, 2.8rem); color: #fff; text-shadow: 0 3px 0 #101D38, 0 6px 18px rgba(16,29,56,.5); line-height: 1.1; }
+    @keyframes qbiTitle { 0% { opacity: 0; transform: translate(-50%, 16px) scale(.9); } 15%, 75% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -10px); } }
+    @media (max-height: 460px) { .qbi-caption { padding-top: .5rem; } .qbi-caption p { font-size: .8rem; } .qbi-bar { margin-top: .35rem; } .qbi-ctl { width: 34px; height: 34px; } .qbi-end { margin-top: .4rem; } .qbi-go, .qbi-again { padding: .55rem .8rem; } }
+    /* gerak-gerik SVG */
+    .qbi-limb-hip { transform-box: fill-box; transform-origin: 50% 0%; }
+    .qbi-limb-sh { transform-box: fill-box; transform-origin: 50% 8%; }
+    @keyframes qbi-leg { from { transform: rotate(-24deg); } to { transform: rotate(24deg); } }
+    @keyframes qbi-leg2 { from { transform: rotate(24deg); } to { transform: rotate(-24deg); } }
+    @keyframes qbi-bob { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+    @keyframes qbi-wave { from { transform: rotate(-160deg); } to { transform: rotate(-120deg); } }
+    @keyframes qbi-move { from { transform: translateX(var(--from)); } to { transform: translateX(var(--to)); } }
+    @keyframes qbi-pop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
+    @keyframes qbi-fadeout { to { opacity: 0; } }
+    @keyframes qbi-show { to { opacity: 1; } }
+    @keyframes qbi-press { from { transform: scale(1); } to { transform: scale(.84); } }
+    @keyframes qbi-tap { from { transform: translate(14px, 14px); } to { transform: translate(0, 0); } }
+    @keyframes qbi-bounce { from { transform: translateY(0); } to { transform: translateY(-14px); } }
+    @keyframes qbi-coin { 0% { opacity: 0; transform: translateY(20px) scale(.5); } 30% { opacity: 1; transform: translateY(-10px) scale(1.1); } 100% { opacity: 0; transform: translateY(-150px) scale(.9); } }
+    @keyframes qbi-door { to { transform: scaleX(0); } }
+    @keyframes qbi-glow { from { filter: drop-shadow(0 0 0 rgba(255,231,163,0)); } to { filter: drop-shadow(0 0 22px rgba(255,231,163,.95)); } }
+    .qbi-door-glow path { opacity: 1 !important; fill: rgba(255,231,163,.0); }
+    @keyframes qbi-enter { to { opacity: 0; transform: scale(.55); } }
+    @keyframes qbi-flash { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: .55; } }
+    @keyframes qbi-rise { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: none; } }
+    @keyframes qbi-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    @keyframes qbi-hand { 0% { transform: translate(140px, 120px); opacity: 0; } 30% { opacity: 1; } 80% { transform: translate(-150px, -40px); } 90% { transform: translate(-150px, -34px) scale(.92); } 100% { transform: translate(-150px, -40px); opacity: 1; } }
+    @keyframes qbi-stamp { from { opacity: 0; transform: scale(2.4); } to { opacity: 1; transform: scale(1); } }
+    .qbi-star { opacity: 0; animation: qbi-burst 1.1s ease-out both; }
+    @keyframes qbi-burst { 0% { opacity: 0; transform: translate(0, 0) scale(.3); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.2); } }
+    @keyframes qbi-unroll { from { opacity: 0; transform: scaleY(0); } to { opacity: 1; transform: scaleY(1); } }
+    .qbi-confetti { opacity: 0; animation: qbi-fall 2.6s ease-in both; }
+    @keyframes qbi-fall { 0% { opacity: 0; transform: translateY(-80px) rotate(0); } 10% { opacity: 1; } 100% { opacity: 0; transform: translateY(520px) rotate(540deg); } }
+    .qbi-twinkle { animation: qbi-tw 1.6s ease-in-out infinite alternate; }
+    @keyframes qbi-tw { from { opacity: .2; } to { opacity: 1; } }
+    .qbi-cloud { animation: qbi-drift linear infinite; }
+    @keyframes qbi-drift { from { transform: translateX(-260px); } to { transform: translateX(1100px); } }
+    .qbi-spark { animation: qbi-sp 1s ease-in-out infinite alternate both; transform-box: fill-box; transform-origin: 50% 50%; }
+    @keyframes qbi-sp { from { opacity: 0; transform: scale(.4) rotate(0); } to { opacity: 1; transform: scale(1.1) rotate(45deg); } }
+    @keyframes qbi-stick { 0% { transform: translate(0, 0); } 25% { transform: translate(34px, -10px); } 50% { transform: translate(10px, -34px); } 75% { transform: translate(-30px, 8px); } 100% { transform: translate(0, 0); } }
+    @keyframes qbi-jump { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-120px); } }
+    @keyframes qbi-swipe { 0% { opacity: 0; transform: translateX(0); } 15% { opacity: 1; } 85% { opacity: 1; transform: translateX(-180px); } 100% { opacity: 0; transform: translateX(-200px); } }
+    @keyframes qbi-key { from { transform: translateY(0) scale(1); } to { transform: translateY(5px) scale(.94); } }
+    @media (prefers-reduced-motion: reduce) { .qbi-cloud, .qbi-twinkle, .qbi-go, .qb-info-glow, .qb-info-badge { animation: none !important; } }
+
+    @media (max-width: 480px) {
+      #landingPageContainer > header a p { display: none; }
+      #landingPageContainer > header a .font-display { white-space: nowrap; font-size: 1rem; }
+      #landingPageContainer > header a .font-display + span { display: none; }
+    }
+
     /* ===== v5: Grand Finale, sertifikat, online, status sinkronisasi ===== */
     .qb-net-pill { display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .7rem; border-radius: 999px; font-size: 10px; font-weight: 700; background: rgba(16,29,56,.88); border: 1px solid rgba(213,169,79,.35); color: #EDE3D0; backdrop-filter: blur(8px); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
     .qb-net-pill:hover { border-color: rgba(213,169,79,.7); }
@@ -667,12 +829,8 @@
         <!-- Desktop Navigation Links -->
         <nav class="hidden lg:flex items-center gap-6 text-sm font-semibold text-[#EDE3D0]/80">
           <a href="#hero" class="hover:text-[#D5A94F] transition-colors">Beranda</a>
-          <a href="#zona-tajwid" class="hover:text-[#D5A94F] transition-colors">5 Zona Tajwid</a>
-          <a href="#fitur" class="hover:text-[#D5A94F] transition-colors">Fitur Game</a>
-          <a href="#cara-bermain" class="hover:text-[#D5A94F] transition-colors">Cara Bermain</a>
-          <a href="#panduan-kontrol" class="hover:text-[#D5A94F] transition-colors">Kontrol</a>
-          <a href="#area-guru" class="hover:text-[#D5A94F] transition-colors">Area Guru</a>
-          <a href="#faq" class="hover:text-[#D5A94F] transition-colors">FAQ</a>
+          <button type="button" onclick="IntroStory.play({ source: 'nav' })" class="hover:text-[#D5A94F] transition-colors">Cara Bermain</button>
+          <button type="button" onclick="LandingLite.openInfo()" class="hover:text-[#D5A94F] transition-colors">Info Game</button>
         </nav>
 
         <!-- Action CTAs -->
@@ -702,12 +860,9 @@
       <!-- Mobile Dropdown Navigation -->
       <div id="mobileMenuDropdown" class="hidden lg:hidden mt-3 pt-3 border-t border-[#203858] text-sm font-semibold flex flex-col gap-2.5 text-[#EDE3D0]/90 pb-2">
         <a href="#hero" onclick="GameApp.toggleMobileMenu()" class="px-3 py-1.5 rounded-lg hover:bg-[#203858] hover:text-[#D5A94F]">Beranda</a>
-        <a href="#zona-tajwid" onclick="GameApp.toggleMobileMenu()" class="px-3 py-1.5 rounded-lg hover:bg-[#203858] hover:text-[#D5A94F]">5 Zona Tajwid</a>
-        <a href="#fitur" onclick="GameApp.toggleMobileMenu()" class="px-3 py-1.5 rounded-lg hover:bg-[#203858] hover:text-[#D5A94F]">Fitur Game</a>
-        <a href="#cara-bermain" onclick="GameApp.toggleMobileMenu()" class="px-3 py-1.5 rounded-lg hover:bg-[#203858] hover:text-[#D5A94F]">Cara Bermain</a>
-        <a href="#panduan-kontrol" onclick="GameApp.toggleMobileMenu()" class="px-3 py-1.5 rounded-lg hover:bg-[#203858] hover:text-[#D5A94F]">Panduan Kontrol</a>
-        <a href="#area-guru" onclick="GameApp.toggleMobileMenu()" class="px-3 py-1.5 rounded-lg hover:bg-[#203858] hover:text-[#D5A94F]">Area Guru & Kelas</a>
-        <a href="#faq" onclick="GameApp.toggleMobileMenu()" class="px-3 py-1.5 rounded-lg hover:bg-[#203858] hover:text-[#D5A94F]">FAQ</a>
+        <button type="button" onclick="GameApp.toggleMobileMenu(); IntroStory.play({ source: 'nav' })" class="text-left px-3 py-1.5 rounded-lg hover:bg-[#203858] hover:text-[#D5A94F]">Cara Bermain (Animasi)</button>
+        <button type="button" onclick="GameApp.toggleMobileMenu(); LandingLite.openInfo()" class="text-left px-3 py-1.5 rounded-lg hover:bg-[#203858] hover:text-[#D5A94F]">Info Game</button>
+        <button type="button" onclick="GameApp.toggleMobileMenu(); BgMusic.toggle()" data-music-toggle class="text-left px-3 py-1.5 rounded-lg hover:bg-[#203858] hover:text-[#D5A94F]"><i class="fa-solid fa-music mr-1"></i> <span data-music-label>Musik</span></button>
       </div>
     </header>
 
@@ -742,23 +897,26 @@
               </span>
             </h1>
 
-            <p class="text-sm sm:text-base text-[#D9BE96] leading-relaxed mb-8 max-w-xl">
-              Selamat datang di <strong class="text-[#D5A94F] font-bold">Qurablox City</strong>! Masuki petualangan 3D kota Arab bernuansa Islami. Jelajahi lima zona akademi megah, taklukkan tantangan soal interaktif, kumpulkan XP dan koin emas, serta hiasi karaktermu di Lemari Gaya. Didesain khusus untuk pembelajaran Al-Qur'an dan Ilmu Tajwid Kelas IX SMP oleh <span class="text-[#6ee7b7] font-semibold">Vanytrihazhiyah, S.Ag</span>.
+            <p class="text-sm sm:text-base text-[#D9BE96] leading-relaxed mb-7 max-w-xl">
+              Jelajahi kota, bertanya kepada warga, masuki gedung akademi, dan taklukkan ujiannya!
             </p>
 
-            <div class="flex flex-wrap items-center gap-4 mb-8">
-              <button onclick="GameApp.openPlayerSetup()" class="btn-3d btn-3d-gold px-8 py-3.5 rounded-2xl font-display font-bold text-base sm:text-lg flex items-center gap-3 tracking-wide shadow-xl">
+            <div class="qb-hero-actions mb-2">
+              <button onclick="GameApp.openPlayerSetup()" class="btn-3d btn-3d-gold qb-hero-play px-8 py-3.5 rounded-2xl font-display font-bold text-base sm:text-lg flex items-center justify-center gap-3 tracking-wide shadow-xl">
                 <i class="fa-solid fa-gamepad text-xl text-[#101D38]"></i>
                 <span>MAIN SEKARANG</span>
               </button>
-
-              <a href="#cara-bermain" class="px-6 py-3.5 rounded-2xl bg-[#203858]/90 hover:bg-[#203858] text-[#EDE3D0] border border-[#D5A94F]/30 font-bold text-sm sm:text-base flex items-center gap-2.5 transition">
-                <i class="fa-solid fa-circle-question text-[#D5A94F]"></i>
-                <span>Panduan Bermain</span>
-              </a>
+              <div class="qb-hero-sub">
+                <button type="button" onclick="IntroStory.play({ source: 'landing' })" class="qb-hero-chip">
+                  <i class="fa-solid fa-film text-[#D5A94F]"></i><span>Tonton Cara Bermain</span>
+                </button>
+                <button type="button" onclick="LandingLite.openInfo()" class="qb-hero-chip">
+                  <i class="fa-solid fa-book-open text-[#6ee7b7]"></i><span>Info Game</span>
+                </button>
+              </div>
             </div>
 
-            <div class="pt-6 border-t border-[#203858] grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div data-landing-extra class="hidden pt-6 border-t border-[#203858] grid-cols-2 sm:grid-cols-4 gap-3 text-center">
               <div class="p-2.5 rounded-xl bg-[#101D38]/80 border border-[#203858]">
                 <p class="text-lg sm:text-xl font-black text-[#D5A94F] font-display"><span data-zone-count>5</span> Zona</p>
                 <p class="text-[11px] text-[#D9BE96]">Akademi <span data-subject-label="short">Tajwid</span></p>
@@ -782,15 +940,9 @@
 
         <!-- Right Side: 360 Showcase Floating Controls -->
         <div class="lg:col-span-5 flex flex-col items-center lg:items-end justify-center pointer-events-auto">
-          <div class="glass-navy rounded-2xl p-4 text-xs max-w-xs text-center border-[#D5A94F]/40 shadow-xl space-y-2.5">
-            <div class="w-10 h-10 mx-auto rounded-xl bg-[#D5A94F]/20 text-[#D5A94F] flex items-center justify-center text-lg">
-              <i class="fa-solid fa-compass animate-spin" style="animation-duration: 18s;"></i>
-            </div>
-            <p class="font-bold text-white text-sm">Tur Kota 360° Real-Time</p>
-            <p class="text-[#D9BE96] text-[11px] leading-snug">
-              Kamera mengitari kota Qurablox City secara perlahan. Anda dapat menggeser layar untuk melihat dari berbagai sudut!
-            </p>
-            <div class="pt-2 flex items-center justify-center gap-2">
+          <div class="glass-navy rounded-2xl p-3 text-xs max-w-xs text-center border-[#D5A94F]/40 shadow-xl space-y-2 hidden lg:block">
+            <p class="font-bold text-white text-sm"><i class="fa-solid fa-compass animate-spin text-[#D5A94F] mr-1" style="animation-duration: 18s;"></i> Tur Kota 360°</p>
+            <div class="flex items-center justify-center gap-2">
               <button onclick="World3D.toggleShowcaseSpeed()" class="px-2.5 py-1 rounded-lg bg-[#203858] hover:bg-[#2c4c78] text-[#D5A94F] text-[10px] font-bold border border-[#D5A94F]/30">
                 <i class="fa-solid fa-gauge-high mr-1"></i>Kecepatan Putar
               </button>
@@ -1391,6 +1543,9 @@
               <span>Ornamen</span>
             </button>
 
+            <button type="button" data-music-toggle onclick="BgMusic.toggle()" class="qb-hud-btn qb-music-btn" title="Musik">
+              <i class="fa-solid fa-music"></i>
+            </button>
             <button onclick="GameApp.openSettingsModal()" class="qb-hud-btn" title="Pengaturan">
               <i class="fa-solid fa-gear"></i><span class="hidden lg:inline">Atur</span>
             </button>
@@ -1417,6 +1572,10 @@
               <button onclick="GameApp.openOrnamentShop(); GameApp.toggleMobileSoloMenu(false);" class="w-full text-left px-3 py-2 rounded-xl hover:bg-[#203858] text-[#D5A94F] text-xs font-bold flex items-center gap-2.5">
                 <i class="fa-solid fa-store w-4 text-center"></i>
                 <span>Toko Ornamen</span>
+              </button>
+              <button type="button" data-music-toggle onclick="BgMusic.toggle()" class="w-full text-left px-3 py-2 rounded-xl hover:bg-[#203858] text-[#F5C542] text-xs font-bold flex items-center gap-2.5">
+                <i class="fa-solid fa-music w-4 text-center"></i>
+                <span data-music-label>Musik</span>
               </button>
               <button onclick="GameApp.openSettingsModal(); GameApp.toggleMobileSoloMenu(false);" class="w-full text-left px-3 py-2 rounded-xl hover:bg-[#203858] text-[#EDE3D0] text-xs font-bold flex items-center gap-2.5 border-t border-[#203858] mt-1 pt-2">
                 <i class="fa-solid fa-gear w-4 text-center"></i>
@@ -1468,7 +1627,7 @@
 
       <!-- Solo Mobile & Tablet Action & Jump Buttons -->
       <div class="absolute safe-bottom-ctrl safe-right-ctrl flex items-end gap-2.5 sm:gap-3 pointer-events-auto solo-touch-ctrl z-30">
-        <button id="btnMobileAction" onclick="World3D.triggerActiveInteraction(0)" class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#101D38]/90 border-2 border-[#D5A94F] text-[#D5A94F] text-sm font-bold flex flex-col items-center justify-center shadow-2xl active:scale-90 active:bg-[#D5A94F]/30 transition-transform select-none">
+        <button id="btnMobileAction" type="button" class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#101D38]/90 border-2 border-[#D5A94F] text-[#D5A94F] text-sm font-bold flex flex-col items-center justify-center shadow-2xl active:scale-90 active:bg-[#D5A94F]/30 transition-transform select-none">
           <i class="fa-solid fa-hand text-base sm:text-lg"></i>
           <span class="text-[8px] sm:text-[9px] font-black mt-0.5">AKSI</span>
         </button>
@@ -1584,7 +1743,7 @@
 
           <!-- Buttons P1 -->
           <div class="flex items-center gap-1.5 pointer-events-auto">
-            <button id="vpBtnAction_P1" onclick="World3D.triggerActiveInteraction(0)" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#101D38]/90 border border-[#D5A94F] text-[#D5A94F] text-xs font-bold flex flex-col items-center justify-center shadow-lg active:scale-90 transition-transform select-none">
+            <button id="vpBtnAction_P1" type="button" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#101D38]/90 border border-[#D5A94F] text-[#D5A94F] text-xs font-bold flex flex-col items-center justify-center shadow-lg active:scale-90 transition-transform select-none">
               <i class="fa-solid fa-hand text-xs"></i>
               <span class="text-[7px] font-black">AKSI</span>
             </button>
@@ -1669,7 +1828,7 @@
 
           <!-- Buttons P2 -->
           <div class="flex items-center gap-1.5 pointer-events-auto">
-            <button id="vpBtnAction_P2" onclick="World3D.triggerActiveInteraction(1)" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#101D38]/90 border border-[#247B69] text-[#6ee7b7] text-xs font-bold flex flex-col items-center justify-center shadow-lg active:scale-90 transition-transform select-none">
+            <button id="vpBtnAction_P2" type="button" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#101D38]/90 border border-[#247B69] text-[#6ee7b7] text-xs font-bold flex flex-col items-center justify-center shadow-lg active:scale-90 transition-transform select-none">
               <i class="fa-solid fa-hand text-xs"></i>
               <span class="text-[7px] font-black">AKSI</span>
             </button>
@@ -1754,7 +1913,7 @@
 
           <!-- Buttons P3 -->
           <div class="flex items-center gap-1.5 pointer-events-auto">
-            <button id="vpBtnAction_P3" onclick="World3D.triggerActiveInteraction(2)" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#101D38]/90 border border-[#3b82f6] text-[#93c5fd] text-xs font-bold flex flex-col items-center justify-center shadow-lg active:scale-90 transition-transform select-none">
+            <button id="vpBtnAction_P3" type="button" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#101D38]/90 border border-[#3b82f6] text-[#93c5fd] text-xs font-bold flex flex-col items-center justify-center shadow-lg active:scale-90 transition-transform select-none">
               <i class="fa-solid fa-hand text-xs"></i>
               <span class="text-[7px] font-black">AKSI</span>
             </button>
@@ -1839,7 +1998,7 @@
 
           <!-- Buttons P4 -->
           <div class="flex items-center gap-1.5 pointer-events-auto">
-            <button id="vpBtnAction_P4" onclick="World3D.triggerActiveInteraction(3)" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#101D38]/90 border border-[#ec4899] text-[#fbcfe8] text-xs font-bold flex flex-col items-center justify-center shadow-lg active:scale-90 transition-transform select-none">
+            <button id="vpBtnAction_P4" type="button" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#101D38]/90 border border-[#ec4899] text-[#fbcfe8] text-xs font-bold flex flex-col items-center justify-center shadow-lg active:scale-90 transition-transform select-none">
               <i class="fa-solid fa-hand text-xs"></i>
               <span class="text-[7px] font-black">AKSI</span>
             </button>
@@ -2867,11 +3026,46 @@
       </div>
 
       <div class="space-y-4 text-xs">
+        <div class="qb-set-group">
+          <label class="block text-[#D9BE96] font-bold mb-1" for="cfgMusicMode"><i class="fa-solid fa-music text-[#D5A94F] mr-1"></i>Musik Latar</label>
+          <select id="cfgMusicMode" onchange="BgMusic.setMode(this.value); BgMusic.start()" class="w-full p-2.5 bg-[#0b1324] border border-[#203858] rounded-xl text-white text-xs">
+            <option value="melodi">Melodi lembut (nuansa Timur Tengah)</option>
+            <option value="alam">Suara alam saja (angin, air mancur, burung — tanpa alat musik)</option>
+            <option value="off">Mati</option>
+          </select>
+          <div class="flex items-center gap-3 mt-2">
+            <span class="text-[10px] text-[#D9BE96] w-16">Volume</span>
+            <input id="cfgMusicVolume" type="range" min="0" max="1" step="0.05" value="0.45" oninput="BgMusic.setVolume(this.value)" class="flex-1 accent-[#D5A94F]">
+          </div>
+          <p class="text-[10px] text-[#D9BE96]/80 mt-1">Musik otomatis dikecilkan saat membaca materi dan mengerjakan soal.</p>
+        </div>
+
         <div>
-          <label class="block text-[#D9BE96] font-bold mb-1">Volume Efek Suara (Audio Synthesizer)</label>
+          <label class="block text-[#D9BE96] font-bold mb-1">Volume Efek Suara</label>
           <div class="flex items-center gap-3">
-            <input id="cfgSoundVolume" type="range" min="0" max="1" step="0.1" value="0.7" onchange="GameAudio.setVolume(this.value)" class="flex-1 accent-[#D5A94F]">
+            <input id="cfgSoundVolume" type="range" min="0" max="1" step="0.1" value="0.7" oninput="GameAudio.setVolume(this.value); QBPrefs.set('sfxVol', Number(this.value))" class="flex-1 accent-[#D5A94F]">
             <button onclick="GameAudio.playCoin()" class="px-2 py-1 bg-[#203858] text-[#D5A94F] rounded-lg text-[10px] font-bold">Tes Suara</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[#D9BE96] font-bold mb-1" for="cfgCamSens"><i class="fa-solid fa-hand-pointer text-[#D5A94F] mr-1"></i>Kepekaan Geser Kamera (HP / Tablet)</label>
+          <select id="cfgCamSens" onchange="QBControls.setCamSens(this.value)" class="w-full p-2.5 bg-[#0b1324] border border-[#203858] rounded-xl text-white text-xs">
+            <option value="rendah">Rendah — kamera berputar pelan</option>
+            <option value="sedang">Sedang (disarankan)</option>
+            <option value="tinggi">Tinggi — kamera berputar cepat</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[#D9BE96] font-bold mb-1" for="cfgIntroMode"><i class="fa-solid fa-film text-[#D5A94F] mr-1"></i>Animasi Pembuka (Cara Bermain)</label>
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="cfgIntroMode" onchange="QBPrefs.set('intro', this.value)" class="flex-1 min-w-0 basis-48 p-2.5 bg-[#0b1324] border border-[#203858] rounded-xl text-white text-xs">
+              <option value="first">Tampil sekali di perangkat ini</option>
+              <option value="always">Tampil setiap kali menekan Main Sekarang</option>
+              <option value="off">Tidak ditampilkan otomatis</option>
+            </select>
+            <button type="button" onclick="GameApp.closeSettingsModal(); IntroStory.play({ source: 'settings' })" class="px-3 py-2 bg-[#203858] text-[#D5A94F] rounded-xl text-[10px] font-bold whitespace-nowrap"><i class="fa-solid fa-play"></i> Tonton</button>
           </div>
         </div>
 
@@ -3190,6 +3384,8 @@
       }
 
       return {
+        getContext() { return getCtx(); },
+        getVolume() { return masterVolume; },
         setVolume(val) {
           masterVolume = parseFloat(val);
         },
@@ -5840,6 +6036,7 @@
 
       function saveData(data) {
         try {
+          try { if (data && typeof data === "object") data.__savedAt = Date.now(); } catch (stampErr) {}
           const jsonStr = JSON.stringify(data);
           localStorage.setItem(STORAGE_KEY, jsonStr);
           peekCache = null;
@@ -7063,6 +7260,8 @@ ${errMsg}`);
       let joystickPointerId = null;
       let joystickVector = { x: 0, y: 0 };
       let cameraSwipePointerId = null;
+      let swipeStartX = 0, swipeStartY = 0, swipeArmed = false;
+      let touchLookScale = 0.6; // v6: kepekaan geser kamera di layar sentuh (Pengaturan → Kepekaan Kamera)
       const activePointers = new Map();
       let initialPinchDistance = null;
       let initialPinchCamDist = 16;
@@ -9991,12 +10190,14 @@ ${errMsg}`);
         // Touch Swipe Camera Orbit & Pinch-to-Zoom on Mobile & Tablet
         canvas.addEventListener("pointerdown", (e) => {
           if (e.pointerId === joystickPointerId) return;
+          if (e.pointerType === "mouse") return; // v6: mouse sudah ditangani mousedown (sebelumnya terhitung dua kali)
           activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
           if (activePointers.size === 1) {
             cameraSwipePointerId = e.pointerId;
             prevMouseX = e.clientX;
             prevMouseY = e.clientY;
+            swipeStartX = e.clientX; swipeStartY = e.clientY; swipeArmed = false;
           } else if (activePointers.size === 2) {
             // Initiate 2-finger pinch-to-zoom
             cameraSwipePointerId = null;
@@ -10021,8 +10222,14 @@ ${errMsg}`);
               playersRuntime[0].cameraState.distance = newDist;
             }
           } else if (e.pointerId === cameraSwipePointerId && activePointers.size === 1) {
-            const dx = e.clientX - prevMouseX;
-            const dy = e.clientY - prevMouseY;
+            if (!swipeArmed) {
+              if (Math.hypot(e.clientX - swipeStartX, e.clientY - swipeStartY) < 8) return;
+              swipeArmed = true; prevMouseX = e.clientX; prevMouseY = e.clientY; return;
+            }
+            const isTouch = e.pointerType !== "mouse";
+            const sx = isTouch ? touchLookScale : 1;
+            const dx = (e.clientX - prevMouseX) * sx;
+            const dy = (e.clientY - prevMouseY) * sx * (isTouch ? 0.8 : 1);
 
             if (isShowcaseMode) {
               showcaseAngle += dx * 0.005;
@@ -10125,8 +10332,15 @@ ${errMsg}`);
           }
 
           thumb.style.transform = `translate(${dx}px, ${dy}px)`;
-          joystickVector.x = dx / maxRadius;
-          joystickVector.y = dy / maxRadius;
+          // v6: zona mati 18% + kurva respons agar gerakan kecil = jalan pelan, tidak "loncat" arah
+          const mag = Math.hypot(dx, dy) / maxRadius;
+          const DEAD = 0.18;
+          if (mag < DEAD) { joystickVector.x = 0; joystickVector.y = 0; }
+          else {
+            const k = Math.pow((mag - DEAD) / (1 - DEAD), 1.3) / mag;
+            joystickVector.x = (dx / maxRadius) * k;
+            joystickVector.y = (dy / maxRadius) * k;
+          }
         }
 
         // Mobile Jump Button
@@ -10134,7 +10348,12 @@ ${errMsg}`);
         if (btnJump) {
           btnJump.addEventListener("pointerdown", (e) => {
             e.preventDefault();
-            performJump();
+            e.stopPropagation();
+            const pj = playersRuntime[0];
+            if (pj && !pj.isGrounded && typeof QBControls !== "undefined") QBControls.bufferJump(() => performPlayerJump(playersRuntime[0]));
+            performPlayerJump(pj);
+            btnJump.classList.add("qb-pressed"); setTimeout(() => btnJump.classList.remove("qb-pressed"), 140);
+            try { if (navigator.vibrate) navigator.vibrate(10); } catch (err) {}
           });
         }
 
@@ -10143,7 +10362,13 @@ ${errMsg}`);
         if (btnAction) {
           btnAction.addEventListener("pointerdown", (e) => {
             e.preventDefault();
-            triggerActiveInteraction();
+            e.stopPropagation();
+            const promptEl = document.getElementById("hudInteractionPrompt");
+            const near = !!(promptEl && !promptEl.classList.contains("opacity-0"));
+            triggerActiveInteraction(0);
+            if (!near && typeof QBControls !== "undefined") QBControls.hintNothingNear();
+            btnAction.classList.add("qb-pressed"); setTimeout(() => btnAction.classList.remove("qb-pressed"), 140);
+            try { if (navigator.vibrate) navigator.vibrate(10); } catch (err) {}
           });
         }
       }
@@ -10984,6 +11209,9 @@ ${errMsg}`);
 
       return {
         init,
+        setTouchLookScale(v) { const n = Number(v); if (isFinite(n) && n > 0) touchLookScale = n; return touchLookScale; },
+        getTouchLookScale() { return touchLookScale; },
+        jumpPlayer(idx) { const p = playersRuntime[idx || 0]; if (p) performPlayerJump(p); return !!p; },
         setShowcaseMode(val) {
           isShowcaseMode = val;
           playersRuntime.forEach(p => {
@@ -13002,6 +13230,7 @@ Silakan berikan perangkat kepada ${p.name}.`);
 
       function openSettingsModal() {
         document.getElementById("modalSettings").classList.remove("hidden");
+        try { QBControls.syncSettingsUi(); } catch (e) {}
       }
       function closeSettingsModal() {
         document.getElementById("modalSettings").classList.add("hidden");
@@ -13016,9 +13245,10 @@ Silakan berikan perangkat kepada ${p.name}.`);
 
       // --- Building Interior & Quiz Sessions ---
       function previewBuildingInfo(buildingId) {
+        // v6: materi, latihan, dan ujian hanya dibuka dengan MASUK ke gedung di dalam kota
+        // (dari beranda tidak lagi bisa dibuka agar misi tidak "bocor"). Guru memakai Pratinjau di Panel Guru.
         const b = GAME_DATA.buildings[buildingId];
-        // From the landing page the learning modal is always used (co-op viewports are not visible there)
-        if (b) openBuildingSession(b, 0, { forceModal: true });
+        if (typeof LandingLite !== "undefined") LandingLite.lockedZoneNotice(b);
       }
 
       // =========================================================================
@@ -15096,6 +15326,10 @@ Silakan berikan perangkat kepada ${p.name}.`);
       return {
         init,
         toggleMobileMenu,
+        toggleMobileSoloMenu,
+        retryStartup,
+        copyDiagnosticsReport,
+        fallbackToLanding,
         openPlayerSetup,
         closePlayerSetup,
         setGameMode,
@@ -19461,7 +19695,19 @@ module.exports = QRCode;
       function scheduleMirror(jsonStr) {
         pendingJson = jsonStr;
         if (mirrorTimer) return;
-        mirrorTimer = setTimeout(() => { mirrorTimer = null; flushMirror(); }, 600);
+        mirrorTimer = setTimeout(() => { mirrorTimer = null; flushMirror(); }, 150);
+      }
+      // v6: saat halaman disembunyikan / ditutup / dimuat ulang, salinan ditulis langsung (tanpa menunggu jeda)
+      function flushNow() {
+        if (mirrorTimer) { clearTimeout(mirrorTimer); mirrorTimer = null; }
+        const json = pendingJson;
+        if (!json) return;
+        pendingJson = null;
+        put("snapshots", { key: "game_data", savedAt: new Date().toISOString(), bytes: json.length, json }).then(() => { status.lastMirrorAt = new Date().toISOString(); });
+      }
+      if (typeof window !== "undefined") {
+        window.addEventListener("pagehide", flushNow);
+        document.addEventListener("visibilitychange", () => { if (document.hidden) flushNow(); });
       }
       async function flushMirror() {
         const json = pendingJson;
@@ -19490,6 +19736,19 @@ module.exports = QRCode;
         let lsOk = false;
         try { lsOk = !!(raw && JSON.parse(raw)); } catch (e) { lsOk = false; }
         const snap = await get("snapshots", "game_data");
+        // v6: data browser ada tetapi lebih lama dari salinan IndexedDB (tertinggal) -> pakai salinan terbaru
+        if (lsOk && snap && snap.json) {
+          try {
+            const a = Number(JSON.parse(raw).__savedAt) || 0;
+            const snapObj = JSON.parse(snap.json);
+            const b = Number(snapObj.__savedAt) || 0;
+            if (a && b > a + 50) {
+              await put("snapshots", { key: "game_data_stale", savedAt: new Date().toISOString(), bytes: raw.length, json: raw });
+              localStorage.setItem(key, snap.json);
+              status.restored = true; status.restoredReason = "newer_snapshot";
+            }
+          } catch (cmpErr) {}
+        }
         if (!lsOk && snap && snap.json) {
           try {
             JSON.parse(snap.json);
@@ -19531,7 +19790,11 @@ module.exports = QRCode;
         const key = StorageManager.STORAGE_KEY;
         const cur = localStorage.getItem(key);
         if (cur) localStorage.setItem(`${key}__pre_restore_${Date.now()}`, cur);
-        localStorage.setItem(key, snap.json);
+        // v6: beri cap waktu baru agar pemulihan manual tidak dianggap "data lama" saat game dibuka lagi
+        let json = snap.json;
+        try { const o = JSON.parse(json); o.__savedAt = Date.now(); json = JSON.stringify(o); } catch (e) {}
+        localStorage.setItem(key, json);
+        await put("snapshots", { key: "game_data", savedAt: new Date().toISOString(), bytes: json.length, json });
         return { ok: true, savedAt: snap.savedAt };
       }
 
@@ -21467,7 +21730,18 @@ module.exports = QRCode;
       let checking = false;
       let lastCheck = null;
 
-      function getInstalled() { try { return JSON.parse(localStorage.getItem(KEY) || "null") || null; } catch (e) { return null; } }
+      function getInstalled() {
+        let v = null;
+        try { v = JSON.parse(localStorage.getItem(KEY) || "null") || null; } catch (e) { v = null; }
+        if (v) return v;
+        // v6: bila penanda hilang (mis. penyimpanan browser dipulihkan dari IndexedDB), pakai versi yang tercatat di paket aktif
+        try {
+          const pack = ContentManager.getActivePack();
+          const ver = (pack.sheetsPublished && pack.sheetsPublished.version) || (pack.sheetsLive && pack.sheetsLive.version);
+          if (ver) return { packId: pack.id, version: Number(ver), hash: null, derived: true };
+        } catch (e) {}
+        return null;
+      }
       function setInstalled(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
       function isEnabled() { return typeof BackendConfig !== "undefined" && BackendConfig.isSheets(); }
 
@@ -21876,7 +22150,7 @@ module.exports = QRCode;
           try { if (typeof PackSync !== "undefined") PackSync.start(); } catch (e) { console.warn("PackSync.start", e); }
           try { NetStatus.render(); } catch (e) {}
           try { await OnlineUI.handleVerifyParam(); } catch (e) {}
-          if (pre && pre.restored) systemToast("<b>Data dipulihkan</b><span>Data penyimpanan browser hilang/rusak dan telah dipulihkan dari salinan IndexedDB.</span>", 9000);
+          if (pre && pre.restored) systemToast("<b>Data dipulihkan</b><span>Data di penyimpanan browser hilang, rusak, atau tertinggal — dipulihkan dari salinan cadangan terbaru (IndexedDB).</span>", 9000);
           try { OfflineStore.requestPersistence(); } catch (e) {}
         })();
       }
@@ -21885,12 +22159,1087 @@ module.exports = QRCode;
     if (typeof window !== "undefined") window.PlatformBoot = PlatformBoot;
 
 
+    /* =======================================================================
+       MODULE 26: PREFERENSI PERANGKAT + MUSIK LATAR (v6)
+       Musik dibuat langsung oleh browser (Web Audio) — tanpa file lagu, tanpa
+       internet, tanpa hak cipta pihak lain. Tiga pilihan:
+         • "melodi" : alunan lembut bernuansa Timur Tengah (qanun, daf, pad)
+         • "alam"   : suara alam kota (angin, air mancur, burung) tanpa alat musik
+         • "off"    : tanpa musik
+       Preferensi disimpan per perangkat (localStorage, kunci terpisah).
+       ======================================================================= */
+    const QBPrefs = (() => {
+      const KEY = "qurablox_prefs_v6";
+      const DEFAULTS = { music: "melodi", musicVol: 0.45, sfxVol: 0.7, camSens: "sedang", intro: "first", introSeen: false };
+      let cache = null;
+      function all() {
+        if (cache) return cache;
+        let v = {};
+        try { v = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { v = {}; }
+        cache = Object.assign({}, DEFAULTS, v);
+        return cache;
+      }
+      function get(k) { return all()[k]; }
+      function set(k, val) {
+        const a = all();
+        a[k] = val;
+        try { localStorage.setItem(KEY, JSON.stringify(a)); } catch (e) {}
+        listeners.forEach(fn => { try { fn(k, val); } catch (e) {} });
+      }
+      const listeners = new Set();
+      return { get, set, all, onChange(fn) { listeners.add(fn); }, KEY, DEFAULTS };
+    })();
+    if (typeof window !== "undefined") window.QBPrefs = QBPrefs;
+
+    const BgMusic = (() => {
+      let ctx = null, out = null, bus = null, comp = null;
+      let running = null;            // "melodi" | "alam" | null
+      let timer = null, nextTime = 0, step = 0, section = 0;
+      let noiseBuf = null, ambientNodes = [], birdTimer = null, waterTimer = null;
+      let duckLevel = 1, hiddenPause = false, unlocked = false;
+      const BPM = 88, EIGHTH = 60 / BPM / 2, LOOK = 0.35;
+
+      // ---------- skala & akor ----------
+      const N = (semi) => 293.66 * Math.pow(2, semi / 12); // relatif ke D4
+      // Ajam (mayor, ceria) & Hijaz (khas Timur Tengah), dalam semitone dari D
+      const SCALES = {
+        ajam: [-12, -10, -8, -7, -5, -3, -1, 0, 2, 4, 5, 7, 9, 11, 12],
+        hijaz: [-12, -11, -8, -7, -5, -4, -2, 0, 1, 4, 5, 7, 8, 10, 12],
+        nahawand: [-12, -10, -9, -7, -5, -4, -2, 0, 2, 3, 5, 7, 8, 10, 12]
+      };
+      // Bagian lagu: [skala, akor per birama (akar, semitone dari D)]
+      const SECTIONS = [
+        { scale: "ajam", chords: [0, 5, 7, 0], drums: 1 },
+        { scale: "ajam", chords: [0, -3, 5, 7], drums: 1 },
+        { scale: "hijaz", chords: [0, 1, 0, -2], drums: 2 },
+        { scale: "nahawand", chords: [0, -4, -7, -5], drums: 0 },
+        { scale: "ajam", chords: [5, 7, 0, 0], drums: 1 },
+        { scale: "hijaz", chords: [0, -2, 1, 0], drums: 2 }
+      ];
+      // pola ritme melodi (1 = bunyi, 0 = diam) per 8 ketukan seperdelapan
+      const RHYTHMS = [[1, 0, 1, 1, 1, 0, 1, 0], [1, 0, 0, 1, 1, 0, 1, 1], [1, 1, 1, 0, 1, 0, 0, 0], [1, 0, 1, 0, 1, 1, 1, 0], [1, 0, 0, 0, 1, 0, 1, 0]];
+      let seed = 7;
+      const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+      let motif = null, motifPos = 7;
+
+      function getCtx() {
+        if (ctx) return ctx;
+        try { ctx = (typeof GameAudio !== "undefined" && GameAudio.getContext) ? GameAudio.getContext() : null; } catch (e) { ctx = null; }
+        if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) ctx = new AC(); }
+        return ctx;
+      }
+      function ensureGraph() {
+        const c = getCtx();
+        if (!c) return null;
+        if (!out) {
+          comp = c.createDynamicsCompressor();
+          comp.threshold.value = -18; comp.ratio.value = 3;
+          out = c.createGain(); out.gain.value = 0;
+          bus = c.createGain(); bus.gain.value = 1;
+          bus.connect(comp); comp.connect(out); out.connect(c.destination);
+        }
+        return c;
+      }
+      function targetVolume() {
+        const v = Number(QBPrefs.get("musicVol"));
+        return (isFinite(v) ? v : 0.45) * duckLevel * (hiddenPause ? 0 : 1);
+      }
+      function applyVolume(fast) {
+        if (!out || !ctx) return;
+        try { out.gain.setTargetAtTime(targetVolume() * 0.55, ctx.currentTime, fast ? 0.05 : 0.6); } catch (e) {}
+      }
+
+      // ---------- instrumen ----------
+      function pluck(t, freq, vel, dur) {
+        const c = ctx;
+        const o1 = c.createOscillator(), o2 = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter();
+        o1.type = "triangle"; o2.type = "sine";
+        o1.frequency.setValueAtTime(freq, t); o2.frequency.setValueAtTime(freq * 2.003, t);
+        f.type = "lowpass"; f.frequency.setValueAtTime(3200, t); f.frequency.exponentialRampToValueAtTime(900, t + dur);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.16 * vel, t + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        const g2 = c.createGain(); g2.gain.value = 0.25;
+        o1.connect(g); o2.connect(g2); g2.connect(g); g.connect(f); f.connect(bus);
+        o1.start(t); o2.start(t); o1.stop(t + dur + 0.05); o2.stop(t + dur + 0.05);
+      }
+      function pad(t, rootSemi, scaleName, dur) {
+        const c = ctx;
+        const third = scaleName === "ajam" ? 4 : (scaleName === "hijaz" ? 4 : 3);
+        [0, third, 7].forEach((iv, i) => {
+          const o = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter();
+          o.type = "sawtooth";
+          o.frequency.setValueAtTime(N(rootSemi + iv - 12), t);
+          o.detune.setValueAtTime((i - 1) * 6, t);
+          f.type = "lowpass"; f.frequency.setValueAtTime(520, t); f.Q.value = 0.3;
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.linearRampToValueAtTime(0.022, t + 0.9);
+          g.gain.setValueAtTime(0.022, t + dur - 0.6);
+          g.gain.linearRampToValueAtTime(0.0001, t + dur + 0.2);
+          o.connect(f); f.connect(g); g.connect(bus);
+          o.start(t); o.stop(t + dur + 0.3);
+        });
+      }
+      function bass(t, rootSemi) {
+        const c = ctx, o = c.createOscillator(), g = c.createGain();
+        o.type = "sine"; o.frequency.setValueAtTime(N(rootSemi - 24), t);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+        o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.75);
+      }
+      function dum(t, vel) {
+        const c = ctx, o = c.createOscillator(), g = c.createGain();
+        o.type = "sine"; o.frequency.setValueAtTime(105, t); o.frequency.exponentialRampToValueAtTime(48, t + 0.22);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.22 * vel, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+        o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.3);
+      }
+      function tek(t, vel) {
+        const c = ctx, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+        s.buffer = getNoise(); f.type = "bandpass"; f.frequency.value = 2600; f.Q.value = 1.2;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.07 * vel, t + 0.003); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+        s.connect(f); f.connect(g); g.connect(bus); s.start(t, rnd() * 1.5); s.stop(t + 0.08);
+      }
+      function getNoise() {
+        if (noiseBuf) return noiseBuf;
+        const len = ctx.sampleRate * 2;
+        noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+        const d = noiseBuf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+        return noiseBuf;
+      }
+
+      // ---------- komposer generatif (motif + variasi, agar tidak membosankan) ----------
+      function newMotif(scale) {
+        const len = scale.length;
+        let idx = 7 + Math.floor(rnd() * 3) - 1;
+        const rhythm = RHYTHMS[Math.floor(rnd() * RHYTHMS.length)];
+        const notes = [];
+        for (let i = 0; i < 16; i++) {
+          const on = rhythm[i % 8] && !(i === 15);
+          const stepSize = [-2, -1, -1, 0, 1, 1, 2][Math.floor(rnd() * 7)];
+          idx = Math.max(4, Math.min(len - 1, idx + stepSize));
+          notes.push(on ? idx : null);
+        }
+        return notes;
+      }
+      function scheduleStep(t) {
+        const sec = SECTIONS[section % SECTIONS.length];
+        const scale = SCALES[sec.scale];
+        const bar = Math.floor(step / 8) % 4;
+        const beat = step % 8;
+        if (beat === 0) {
+          const root = sec.chords[bar];
+          pad(t, root, sec.scale, EIGHTH * 8);
+          bass(t, root);
+          if (bar % 2 === 0) { motifPos = 0; if (!motif || bar === 0) motif = newMotif(scale); }
+        }
+        if (beat === 4) bass(t, sec.chords[bar] + 7);
+        // melodi: frasa tanya (birama 1-2) & jawab bervariasi (birama 3-4)
+        if (motif) {
+          const i = (bar % 2) * 8 + beat;
+          let n = motif[i];
+          if (n !== null && bar >= 2 && rnd() < 0.35) n = Math.max(4, Math.min(scale.length - 1, n + (rnd() < 0.5 ? -1 : 1)));
+          if (bar === 3 && beat === 6) n = 7; // pulang ke nada dasar
+          if (bar === 3 && beat === 7) n = null;
+          if (n !== null && n !== undefined) pluck(t, N(scale[n]), 0.75 + rnd() * 0.25, beat % 2 ? 0.45 : 0.75);
+        }
+        // daf: DUM . tek tek DUM . tek .
+        if (sec.drums) {
+          const pat = sec.drums === 2 ? "D.ttD.t." : "D..tD.t.";
+          const ch = pat[beat];
+          if (ch === "D") dum(t, beat === 0 ? 1 : 0.75);
+          else if (ch === "t") tek(t, 0.7 + rnd() * 0.3);
+        }
+        step++;
+        if (step % 32 === 0) section++;
+      }
+      function tick() {
+        if (!ctx || running !== "melodi") return;
+        while (nextTime < ctx.currentTime + LOOK) { scheduleStep(nextTime); nextTime += EIGHTH; }
+      }
+
+      // ---------- suara alam ----------
+      function startAmbient() {
+        const c = ctx;
+        const n1 = c.createBufferSource(); n1.buffer = getNoise(); n1.loop = true;
+        const wf = c.createBiquadFilter(); wf.type = "lowpass"; wf.frequency.value = 380;
+        const wg = c.createGain(); wg.gain.value = 0.18;
+        const lfo = c.createOscillator(), lfoG = c.createGain(); lfo.frequency.value = 0.07; lfoG.gain.value = 160;
+        lfo.connect(lfoG); lfoG.connect(wf.frequency);
+        const lfo2 = c.createOscillator(), lfo2G = c.createGain(); lfo2.frequency.value = 0.045; lfo2G.gain.value = 0.08;
+        lfo2.connect(lfo2G); lfo2G.connect(wg.gain);
+        n1.connect(wf); wf.connect(wg); wg.connect(bus);
+        const n2 = c.createBufferSource(); n2.buffer = getNoise(); n2.loop = true; n2.playbackRate.value = 0.8;
+        const ff = c.createBiquadFilter(); ff.type = "bandpass"; ff.frequency.value = 1300; ff.Q.value = 0.7;
+        const fg = c.createGain(); fg.gain.value = 0.05;
+        n2.connect(ff); ff.connect(fg); fg.connect(bus);
+        [n1, n2, lfo, lfo2].forEach(n => n.start());
+        ambientNodes = [n1, n2, lfo, lfo2, wf, wg, ff, fg, lfoG, lfo2G];
+        waterTimer = setInterval(() => { try { fg.gain.setTargetAtTime(0.035 + Math.random() * 0.03, ctx.currentTime, 0.05); } catch (e) {} }, 90);
+        const bird = () => {
+          if (running !== "alam") return;
+          try {
+            const t0 = ctx.currentTime + 0.05, k = 2 + Math.floor(Math.random() * 3), base = 2300 + Math.random() * 1400;
+            for (let i = 0; i < k; i++) {
+              const t = t0 + i * (0.11 + Math.random() * 0.06);
+              const o = ctx.createOscillator(), g = ctx.createGain();
+              o.type = "sine"; o.frequency.setValueAtTime(base, t); o.frequency.exponentialRampToValueAtTime(base * (1.25 + Math.random() * 0.3), t + 0.07);
+              g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.05, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+              o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.1);
+            }
+          } catch (e) {}
+          birdTimer = setTimeout(bird, 2500 + Math.random() * 5500);
+        };
+        birdTimer = setTimeout(bird, 1200);
+      }
+      function stopAmbient() {
+        ambientNodes.forEach(n => { try { if (n.stop) n.stop(); } catch (e) {} try { n.disconnect(); } catch (e) {} });
+        ambientNodes = [];
+        clearInterval(waterTimer); waterTimer = null;
+        clearTimeout(birdTimer); birdTimer = null;
+      }
+
+      // ---------- kontrol ----------
+      function stop(fadeOnly) {
+        if (!running) return;
+        const was = running;
+        running = null;
+        clearInterval(timer); timer = null;
+        if (out && ctx) { try { out.gain.setTargetAtTime(0, ctx.currentTime, 0.15); } catch (e) {} }
+        if (was === "alam") setTimeout(stopAmbient, 600);
+        updateUi();
+      }
+      function start() {
+        const mode = QBPrefs.get("music");
+        if (mode === "off") { stop(); return false; }
+        const c = ensureGraph();
+        if (!c) return false;
+        try { if (c.state === "suspended") c.resume(); } catch (e) {}
+        if (running === mode) { applyVolume(); return true; }
+        if (running) { const was = running; running = null; clearInterval(timer); timer = null; if (was === "alam") stopAmbient(); }
+        running = mode;
+        if (mode === "melodi") {
+          nextTime = c.currentTime + 0.15; step = 0; motif = null;
+          section = Math.floor(Math.random() * 2) * 2;
+          seed = 1 + Math.floor(Math.random() * 100000);
+          timer = setInterval(tick, 60);
+          tick();
+        } else if (mode === "alam") {
+          startAmbient();
+        }
+        try { out.gain.cancelScheduledValues(c.currentTime); out.gain.setValueAtTime(0, c.currentTime); } catch (e) {}
+        applyVolume();
+        updateUi();
+        return true;
+      }
+      function setMode(mode) {
+        if (!["melodi", "alam", "off"].includes(mode)) return;
+        QBPrefs.set("music", mode);
+        if (mode === "off") stop(); else if (unlocked) start();
+        updateUi();
+      }
+      function toggle() {
+        const cur = QBPrefs.get("music");
+        if (cur === "off") {
+          const last = QBPrefs.get("lastMusic") || "melodi";
+          unlocked = true;
+          setMode(last);
+        } else {
+          QBPrefs.set("lastMusic", cur);
+          setMode("off");
+        }
+        try { GameAudio.playClick(); } catch (e) {}
+        return QBPrefs.get("music");
+      }
+      function setVolume(v) {
+        QBPrefs.set("musicVol", Math.max(0, Math.min(1, Number(v) || 0)));
+        applyVolume(true);
+      }
+      function setDuck(level) {
+        const l = Math.max(0, Math.min(1, level));
+        if (Math.abs(l - duckLevel) < 0.01) return;
+        duckLevel = l; applyVolume();
+      }
+      function isPlaying() { return !!running; }
+      function label(mode) { return mode === "melodi" ? "Melodi" : mode === "alam" ? "Suara Alam" : "Mati"; }
+      function updateUi() {
+        const mode = QBPrefs.get("music");
+        const on = mode !== "off";
+        document.querySelectorAll("[data-music-toggle]").forEach(b => {
+          b.classList.toggle("is-off", !on);
+          b.setAttribute("aria-pressed", on ? "true" : "false");
+          b.title = on ? "Musik: " + label(mode) + " (ketuk untuk mematikan)" : "Musik mati (ketuk untuk menyalakan)";
+          const i = b.querySelector("i"); if (i) i.className = "fa-solid " + (on ? "fa-music" : "fa-volume-xmark");
+          const s = b.querySelector("[data-music-label]"); if (s) s.textContent = on ? "Musik: " + label(mode) : "Musik: Mati";
+        });
+        const sel = document.getElementById("cfgMusicMode"); if (sel) sel.value = mode;
+      }
+
+      // Kecilkan musik saat membaca materi / mengerjakan soal agar murid fokus
+      function watchFocus() {
+        setInterval(() => {
+          let focus = false;
+          try {
+            const ids = ["modalBuildingSession", "modalGrandFinale"];
+            focus = ids.some(id => { const el = document.getElementById(id); return el && !el.classList.contains("hidden"); }) ||
+              !!document.querySelector('[id^="vpSessionModal_"]:not(.hidden)') ||
+              !!(GameApp.getActiveQuizSession && GameApp.getActiveQuizSession());
+          } catch (e) {}
+          setDuck(focus ? 0.35 : 1);
+        }, 500);
+        document.addEventListener("visibilitychange", () => { hiddenPause = document.hidden; applyVolume(true); });
+      }
+      function unlockOnGesture() {
+        const go = () => {
+          unlocked = true;
+          if (QBPrefs.get("music") !== "off") start();
+          window.removeEventListener("pointerdown", go, true);
+          window.removeEventListener("keydown", go, true);
+        };
+        window.addEventListener("pointerdown", go, true);
+        window.addEventListener("keydown", go, true);
+      }
+      function init() {
+        try { GameAudio.setVolume(QBPrefs.get("sfxVol")); } catch (e) {}
+        unlockOnGesture();
+        watchFocus();
+        updateUi();
+      }
+      return { init, start, stop, toggle, setMode, setVolume, setDuck, isPlaying, updateUi, getMode: () => QBPrefs.get("music"), _running: () => running };
+    })();
+    if (typeof window !== "undefined") window.BgMusic = BgMusic;
+
+    /* =======================================================================
+       MODULE 27: KENYAMANAN KONTROL HP (v6)
+       - Kepekaan geser kamera (Rendah / Sedang / Tinggi), tersimpan per perangkat
+       - Petunjuk bila AKSI ditekan saat tidak ada warga/pintu di dekat pemain
+       - "Jump buffer": tombol LOMPAT yang ditekan sesaat sebelum mendarat tetap dihitung
+       ======================================================================= */
+    const QBControls = (() => {
+      const SENS = { rendah: 0.4, sedang: 0.6, tinggi: 0.9 };
+      let hintTimer = null, lastHint = 0;
+      let buffered = null;
+
+      function setCamSens(v) {
+        const key = SENS[v] ? v : "sedang";
+        QBPrefs.set("camSens", key);
+        try { World3D.setTouchLookScale(SENS[key]); } catch (e) {}
+        return key;
+      }
+      function hintNothingNear() {
+        const now = Date.now();
+        if (now - lastHint < 2500) return;
+        lastHint = now;
+        let el = document.getElementById("qbActionHint");
+        if (!el) {
+          el = document.createElement("div");
+          el.id = "qbActionHint";
+          el.setAttribute("role", "status");
+          const host = document.getElementById("gameHudContainer") || document.body;
+          host.appendChild(el);
+        }
+        el.innerHTML = `<i class="fa-solid fa-hand-point-right"></i> Dekati <b>warga</b> (tanda <b>!</b>) atau <b>pintu gedung</b>, lalu tekan AKSI.`;
+        el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
+        clearTimeout(hintTimer);
+        hintTimer = setTimeout(() => el.classList.remove("show"), 2600);
+      }
+      function bufferJump(fn) {
+        buffered = { fn, until: performance.now() + 180 };
+        const loop = () => {
+          if (!buffered) return;
+          if (performance.now() > buffered.until) { buffered = null; return; }
+          let grounded = false;
+          try { const p = World3D.getPlayersRuntime()[0]; grounded = !!(p && p.isGrounded); } catch (e) {}
+          if (grounded) { const f = buffered.fn; buffered = null; try { f(); } catch (e) {} return; }
+          requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+      }
+      function syncSettingsUi() {
+        const a = QBPrefs.all();
+        const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+        set("cfgMusicMode", a.music);
+        set("cfgMusicVolume", a.musicVol);
+        set("cfgSoundVolume", a.sfxVol);
+        set("cfgCamSens", a.camSens);
+        set("cfgIntroMode", a.intro);
+      }
+      function init() {
+        setCamSens(QBPrefs.get("camSens"));
+        syncSettingsUi();
+        // Mencegah zoom ketuk-ganda / menu tekan-lama pada tombol kontrol di HP
+        ["btnMobileJump", "btnMobileAction", "mobileJoystickContainer"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener("contextmenu", (e) => e.preventDefault());
+        });
+      }
+      return { init, setCamSens, hintNothingNear, bufferJump, syncSettingsUi, SENS };
+    })();
+    if (typeof window !== "undefined") window.QBControls = QBControls;
+
+    /* =======================================================================
+       MODULE 29: ANIMASI PEMBUKA "KISAH SANTRI PENCARI ILMU" (v6)
+       Cerita bergambar beranimasi (SVG 2D, ringan untuk HP sekolah) yang
+       menunjukkan alur permainan: bertanya ke warga → masuk gedung → baca materi
+       & latihan → ujian tantangan (KKM) → Grand Finale & sertifikat → kontrol.
+       Nama gedung, jumlah gedung, dan KKM diambil dari paket aktif guru.
+       Tampil otomatis saat menekan "Main Sekarang" (pertama kali / selalu / mati,
+       diatur di Pengaturan). Bisa dilewati kapan saja.
+       ======================================================================= */
+    const IntroStory = (() => {
+      const esc = (v) => QBUtil.escapeHtml(v);
+      let st = null;       // { scene, t0, elapsed, paused, raf, opts, cuesDone }
+      let suppress = false;
+
+      // ---------- data dari paket aktif ----------
+      function info() {
+        let list = [];
+        try { list = ContentManager.listBuildings(); } catch (e) { list = []; }
+        const first = list[0] ? GameApp.getBuildingDisplayName(list[0]) : "Alif Lam Academy";
+        let kkm = 75;
+        try { kkm = Number(StorageManager.getData().quizSettings.kkm) || 75; } catch (e) {}
+        const touch = (window.matchMedia && matchMedia("(pointer: coarse)").matches) || ("ontouchstart" in window && navigator.maxTouchPoints > 0);
+        return { academy: first, n: list.length || 5, kkm, touch, colors: list.map(b => QBUtil.numToHex(b.color)), names: list.map(b => GameApp.getBuildingDisplayName(b)) };
+      }
+
+      // ---------- gambar: tokoh ----------
+      // Santri (murid putra): peci hitam, baju koko putih, tas hijau. Titik (0,0) = telapak kaki.
+      function santri(opts) {
+        const o = Object.assign({ walk: 0, wave: false, delay: 0 }, opts || {});
+        const legAnim = o.walk ? `animation: qbi-leg .3s ease-in-out ${o.delay}s ${o.walk} alternate;` : "";
+        const legAnim2 = o.walk ? `animation: qbi-leg2 .3s ease-in-out ${o.delay}s ${o.walk} alternate;` : "";
+        const bob = o.walk ? `animation: qbi-bob .3s ease-in-out ${o.delay}s ${o.walk} alternate;` : "";
+        const wave = o.wave ? `animation: qbi-wave .45s ease-in-out ${o.wave}s 6 alternate;` : (o.walk ? legAnim2 : "");
+        return `
+        <g class="qbi-santri">
+          <ellipse cx="0" cy="4" rx="46" ry="9" fill="#000" opacity=".16"/>
+          <g style="${bob}">
+            <g class="qbi-limb-hip" style="${legAnim}"><rect x="-30" y="-74" width="26" height="70" rx="6" fill="#22314f"/><rect x="-33" y="-12" width="32" height="14" rx="6" fill="#1b1b22"/></g>
+            <g class="qbi-limb-hip" style="${legAnim2}"><rect x="4" y="-74" width="26" height="70" rx="6" fill="#2a3b5e"/><rect x="2" y="-12" width="32" height="14" rx="6" fill="#1b1b22"/></g>
+            <rect x="-52" y="-150" width="22" height="64" rx="9" fill="#2f8f6f"/>
+            <rect x="-44" y="-156" width="88" height="88" rx="14" fill="#f6f2e7" stroke="#d9cfb8" stroke-width="2"/>
+            <path d="M-12 -156 L0 -138 L12 -156" fill="none" stroke="#D5A94F" stroke-width="4" stroke-linecap="round"/>
+            <line x1="0" y1="-136" x2="0" y2="-80" stroke="#e3d8c0" stroke-width="2"/>
+            <circle cx="0" cy="-124" r="3" fill="#D5A94F"/><circle cx="0" cy="-108" r="3" fill="#D5A94F"/><circle cx="0" cy="-92" r="3" fill="#D5A94F"/>
+            <rect x="-44" y="-84" width="88" height="10" rx="4" fill="#e9e1cf"/>
+            <g class="qbi-limb-sh" style="${o.walk ? legAnim2 : ""}"><rect x="-64" y="-152" width="22" height="70" rx="10" fill="#f6f2e7" stroke="#d9cfb8" stroke-width="2"/><circle cx="-53" cy="-78" r="10" fill="#ffd9b0"/></g>
+            <g class="qbi-limb-sh" style="${wave || legAnim}"><rect x="42" y="-152" width="22" height="70" rx="10" fill="#f6f2e7" stroke="#d9cfb8" stroke-width="2"/><circle cx="53" cy="-78" r="10" fill="#ffd9b0"/></g>
+            <g>
+              <rect x="-40" y="-236" width="80" height="78" rx="18" fill="#ffd9b0"/>
+              <rect x="-42" y="-248" width="84" height="26" rx="8" fill="#16161c"/>
+              <rect x="-42" y="-228" width="84" height="5" fill="#2b2b33"/>
+              <ellipse cx="-15" cy="-196" rx="5.5" ry="7" fill="#1d1d24"/><ellipse cx="15" cy="-196" rx="5.5" ry="7" fill="#1d1d24"/>
+              <circle cx="-13" cy="-198" r="2" fill="#fff"/><circle cx="17" cy="-198" r="2" fill="#fff"/>
+              <ellipse cx="-26" cy="-180" rx="7" ry="4" fill="#ff9f8f" opacity=".55"/><ellipse cx="26" cy="-180" rx="7" ry="4" fill="#ff9f8f" opacity=".55"/>
+              <path d="M-10 -176 Q0 -167 10 -176" fill="none" stroke="#9a4b3a" stroke-width="3.5" stroke-linecap="round"/>
+            </g>
+          </g>
+        </g>`;
+      }
+      // Ustaz (warga): sorban putih, jubah hijau, janggut
+      function ustaz() {
+        return `
+        <g class="qbi-ustaz">
+          <ellipse cx="0" cy="4" rx="52" ry="10" fill="#000" opacity=".16"/>
+          <path d="M-50 -170 L50 -170 L62 0 L-62 0 Z" fill="#247B69"/>
+          <path d="M-8 -170 L8 -170 L10 0 L-10 0 Z" fill="#D5A94F" opacity=".85"/>
+          <rect x="-70" y="-166" width="24" height="86" rx="11" fill="#1f6b5b"/><circle cx="-58" cy="-76" r="11" fill="#f1c9a0"/>
+          <rect x="46" y="-166" width="24" height="86" rx="11" fill="#1f6b5b"/><circle cx="58" cy="-76" r="11" fill="#f1c9a0"/>
+          <rect x="-40" y="-250" width="80" height="84" rx="18" fill="#f1c9a0"/>
+          <path d="M-40 -200 Q-40 -150 0 -146 Q40 -150 40 -200 Q30 -180 0 -178 Q-30 -180 -40 -200Z" fill="#6b6b6b"/>
+          <path d="M-46 -238 Q0 -292 46 -238 L46 -226 L-46 -226 Z" fill="#fbfbf7" stroke="#ddd" stroke-width="2"/>
+          <rect x="-46" y="-232" width="92" height="14" rx="7" fill="#efefe9"/>
+          <ellipse cx="-14" cy="-206" rx="5" ry="6.5" fill="#1d1d24"/><ellipse cx="14" cy="-206" rx="5" ry="6.5" fill="#1d1d24"/>
+          <path d="M-9 -186 Q0 -180 9 -186" fill="none" stroke="#4a3b30" stroke-width="3" stroke-linecap="round"/>
+        </g>`;
+      }
+      function bubble(x, y, lines, opt) {
+        const o = Object.assign({ side: "left", color: "#ffffff", ink: "#101D38", delay: 0, out: 0, fs: 30 }, opt || {});
+        const w = Math.max(...lines.map(l => l.length)) * o.fs * 0.56 + 44;
+        const h = lines.length * o.fs * 1.25 + 30;
+        const bx = o.side === "left" ? x - 40 : x - w + 40;
+        const tail = o.side === "left" ? `M${x - 10} ${y + h - 2} L${x + 6} ${y + h + 26} L${x + 26} ${y + h - 2}Z` : `M${x - 26} ${y + h - 2} L${x - 6} ${y + h + 26} L${x + 10} ${y + h - 2}Z`;
+        const anim = `animation: qbi-pop .4s cubic-bezier(.2,1.6,.4,1) ${o.delay}s both${o.out ? `, qbi-fadeout .3s ease-in ${o.out}s forwards` : ""};`;
+        return `<g class="qbi-pop" style="${anim};transform-origin:${x}px ${y + h}px">
+          <rect x="${bx}" y="${y}" width="${w}" height="${h}" rx="22" fill="${o.color}" stroke="rgba(16,29,56,.25)" stroke-width="3"/>
+          <path d="${tail}" fill="${o.color}"/>
+          ${lines.map((l, i) => `<text x="${bx + 22}" y="${y + 22 + o.fs + i * o.fs * 1.25 - 6}" font-size="${o.fs}" font-weight="800" fill="${o.ink}" font-family="Fredoka, 'Plus Jakarta Sans', system-ui, sans-serif">${esc(l)}</text>`).join("")}
+        </g>`;
+      }
+      function aksiBtn(x, y, delay, times) {
+        return `<g class="qbi-pop" style="animation: qbi-pop .35s ease-out ${delay}s both; transform-origin:${x}px ${y}px">
+          <g style="animation: qbi-press .5s ease-in-out ${delay + 0.35}s ${times || 3} alternate; transform-origin:${x}px ${y}px">
+            <circle cx="${x}" cy="${y}" r="42" fill="#101D38" stroke="#D5A94F" stroke-width="6"/>
+            <text x="${x}" y="${y + 9}" text-anchor="middle" font-size="24" font-weight="900" fill="#D5A94F" font-family="Fredoka, 'Plus Jakarta Sans', system-ui, sans-serif">AKSI</text>
+          </g>
+          <g style="animation: qbi-tap .5s ease-in-out ${delay + 0.35}s ${times || 3} alternate">
+            <path d="M${x + 30} ${y + 20} l14 48 l10 -14 l16 18 l10 -8 l-16 -18 l16 -6 Z" fill="#fff" stroke="#101D38" stroke-width="3" stroke-linejoin="round"/>
+          </g>
+        </g>`;
+      }
+      function coin(x, y, delay) {
+        return `<g style="animation: qbi-coin 1.1s ease-out ${delay}s both">
+          <circle cx="${x}" cy="${y}" r="20" fill="#F5C542" stroke="#b8860b" stroke-width="3"/>
+          <text x="${x}" y="${y + 7}" text-anchor="middle" font-size="18" font-weight="900" fill="#8a6200">+</text></g>`;
+      }
+
+      // ---------- gambar: latar ----------
+      function ground(variant) {
+        return `
+          <rect x="-1200" y="600" width="3400" height="500" fill="${variant === "inside" ? "#6b4a2b" : "#e8c78b"}"/>
+          <rect x="-1200" y="600" width="3400" height="14" fill="${variant === "inside" ? "#583b21" : "#d6b170"}"/>
+          ${variant === "inside" ? "" : `<g opacity=".35">${Array.from({ length: 22 }, (_, i) => `<rect x="${-1100 + i * 150}" y="640" width="90" height="10" rx="5" fill="#c79f5c"/>`).join("")}</g>`}`;
+      }
+      function sky() {
+        return `
+          <rect x="-1200" y="-1400" width="3400" height="2000" fill="url(#qbiSky)"/>
+          <g class="qbi-sun"><circle cx="840" cy="220" r="90" fill="#fff4c9" opacity=".35"/><circle cx="840" cy="220" r="52" fill="#ffe08a"/></g>
+          <g class="qbi-cloud" style="animation-duration:38s"><ellipse cx="120" cy="190" rx="70" ry="24" fill="#fff" opacity=".9"/><ellipse cx="170" cy="176" rx="46" ry="26" fill="#fff" opacity=".9"/></g>
+          <g class="qbi-cloud" style="animation-duration:52s;animation-delay:-20s"><ellipse cx="560" cy="160" rx="80" ry="22" fill="#fff" opacity=".8"/><ellipse cx="610" cy="148" rx="44" ry="22" fill="#fff" opacity=".8"/></g>`;
+      }
+      function palm(x, s) {
+        return `<g transform="translate(${x} 600) scale(${s || 1})">
+          <path d="M-6 0 Q-14 -90 4 -190 L14 -188 Q2 -90 8 0Z" fill="#9b6b3c"/>
+          <g fill="#2f8f5f"><path d="M8 -190 Q-60 -220 -110 -170 Q-50 -196 8 -184Z"/><path d="M8 -190 Q70 -230 120 -176 Q60 -200 8 -184Z"/><path d="M8 -192 Q-20 -260 -70 -260 Q-14 -236 4 -188Z"/><path d="M8 -192 Q40 -262 90 -250 Q40 -232 10 -188Z"/></g>
+          <g fill="#c88a2c"><circle cx="0" cy="-180" r="8"/><circle cx="14" cy="-176" r="8"/></g></g>`;
+      }
+      function mosque(x) {
+        return `<g transform="translate(${x} 600)">
+          <rect x="-150" y="-170" width="300" height="170" fill="#f3e3c3"/>
+          <path d="M-90 -170 Q0 -330 90 -170Z" fill="#D5A94F"/><rect x="-4" y="-330" width="8" height="40" fill="#b8913f"/>
+          <path d="M0 -352 a12 12 0 1 0 8 20 a9 9 0 1 1 -8 -20" fill="#b8913f"/>
+          <rect x="170" y="-330" width="44" height="330" fill="#efdcb6"/><path d="M162 -330 L222 -330 L192 -380Z" fill="#247B69"/>
+          <rect x="176" y="-250" width="32" height="10" fill="#d9c191"/>
+          ${[-110, -50, 10, 70].map(dx => `<path d="M${dx} 0 L${dx} -70 Q${dx + 20} -100 ${dx + 40} -70 L${dx + 40} 0Z" fill="#cdb084"/>`).join("")}
+        </g>`;
+      }
+      function academy(x, name, color, opt) {
+        const o = Object.assign({ doorOpen: 0, glow: 0 }, opt || {});
+        const fs = Math.max(18, Math.min(30, Math.floor(560 / Math.max(10, name.length))));
+        return `<g transform="translate(${x} 600)">
+          <rect x="-200" y="-330" width="400" height="330" fill="#f1e2c2" stroke="#d9c49a" stroke-width="4"/>
+          <rect x="-200" y="-330" width="400" height="26" fill="${color}"/>
+          <path d="M-110 -330 Q0 -460 110 -330Z" fill="${color}"/>
+          <rect x="-170" y="-292" width="340" height="52" rx="12" fill="#101D38" stroke="#D5A94F" stroke-width="4"/>
+          <text x="0" y="-${266 - fs / 2.8}" text-anchor="middle" font-size="${fs}" font-weight="900" fill="#F5C542" font-family="Fredoka, 'Plus Jakarta Sans', system-ui, sans-serif">${esc(name)}</text>
+          ${[-150, 150].map(dx => `<path d="M${dx - 30} -60 L${dx - 30} -170 Q${dx} -210 ${dx + 30} -170 L${dx + 30} -60Z" fill="#cfe6f2" stroke="#d9c49a" stroke-width="4"/>`).join("")}
+          <g class="qbi-door-glow" style="${o.glow ? `animation: qbi-glow 1s ease-in-out ${o.glow}s infinite alternate` : ""}"><path d="M-74 0 L-74 -170 Q0 -250 74 -170 L74 0Z" fill="#ffe7a3" opacity=".0"/></g>
+          <path d="M-62 0 L-62 -164 Q0 -232 62 -164 L62 0Z" fill="#fff3c9"/>
+          <g style="transform-box:fill-box;transform-origin:0% 50%;${o.doorOpen ? `animation: qbi-door .7s ease-in ${o.doorOpen}s forwards` : ""}"><path d="M-62 0 L-62 -164 Q-31 -205 0 -214 L0 0Z" fill="#8a5a2b" stroke="#6b431e" stroke-width="3"/></g>
+          <g style="transform-box:fill-box;transform-origin:100% 50%;${o.doorOpen ? `animation: qbi-door .7s ease-in ${o.doorOpen}s forwards` : ""}"><path d="M0 0 L0 -214 Q31 -205 62 -164 L62 0Z" fill="#8a5a2b" stroke="#6b431e" stroke-width="3"/></g>
+        </g>`;
+      }
+      // tokoh bergerak horizontal: gx (CSS) membawa translateX, gy (atribut) posisi kaki
+      function mover(inner, from, to, dur, delay, y) {
+        return `<g style="--from:${from}px;--to:${to}px;animation: qbi-move ${dur}s ease-in-out ${delay || 0}s both"><g transform="translate(0 ${y || 600})">${inner}</g></g>`;
+      }
+
+      // ---------- adegan ----------
+      function scenes(I) {
+        const walk = (sec) => Math.max(2, Math.round(sec / 0.3 / 2) * 2);
+        return [
+          {
+            dur: 6.5, step: "", title: "Selamat datang di Kota Qurablox!",
+            text: "Kamu adalah seorang santri pencari ilmu. Ayo jelajahi kotanya!",
+            svg: () => `${sky()}${mosque(760)}${palm(-30, 1.1)}${palm(980, 0.9)}${ground()}
+              ${mover(santri({ walk: walk(3.4), delay: 0.3, wave: 4 }), -160, 430, 3.4, 0.3)}
+              ${bubble(470, 290, ["Assalamu'alaikum!"], { delay: 4.0 })}`,
+            cues: [[4.0, "click"]]
+          },
+          {
+            dur: 8.5, step: "1", title: "Bertanya kepada warga",
+            text: "Dekati warga bertanda ❗ lalu tekan AKSI. Jawab kuisnya, kamu dapat koin!",
+            svg: () => `${sky()}${palm(120, 0.9)}${palm(900, 1)}${ground()}
+              <g transform="translate(680 600)">${ustaz()}<g style="animation: qbi-fadeout .3s ease-in 4.3s forwards"><g style="animation: qbi-bounce .7s ease-in-out infinite alternate"><circle cx="0" cy="-322" r="26" fill="#F5C542" stroke="#101D38" stroke-width="4"/><text x="0" y="-310" text-anchor="middle" font-size="34" font-weight="900" fill="#101D38">!</text></g></g></g>
+              ${mover(santri({ walk: walk(2.2), delay: 0.2 }), 80, 460, 2.2, 0.2)}
+              ${aksiBtn(330, 470, 2.4, 2)}
+              ${bubble(470, 230, ["Ustaz, di mana aku bisa", "belajar tajwid?"], { delay: 3.0, out: 4.3, fs: 28 })}
+              ${bubble(700, 170, ["Ke " + I.academy + "!", "Tapi jawab dulu kuisku…"], { side: "right", color: "#fff6dc", delay: 4.5, fs: 26 })}
+              <g class="qbi-pop" style="animation: qbi-pop .4s ease-out 6.0s both; transform-origin: 470px 420px">
+                <rect x="370" y="360" width="200" height="56" rx="14" fill="#247B69"/><text x="470" y="397" text-anchor="middle" font-size="24" font-weight="900" fill="#fff">✓ Benar!</text></g>
+              ${coin(470, 360, 6.4)}${coin(500, 350, 6.6)}${coin(440, 352, 6.8)}`,
+            cues: [[2.6, "click"], [6.0, "correct"], [6.5, "coin"]]
+          },
+          {
+            dur: 7.5, step: "2", title: "Masuk ke gedung akademi",
+            text: "Ikuti petunjuk warga. Di depan pintu gedung, tekan AKSI untuk masuk.",
+            svg: () => `${sky()}${ground()}${academy(720, I.academy, I.colors[0] || "#247B69", { doorOpen: 4.0, glow: 2.2 })}${palm(60, 1)}
+              <g style="animation: qbi-enter 1s ease-in 4.7s forwards; transform-box: fill-box; transform-origin: 50% 100%">
+                ${mover(santri({ walk: walk(2.8), delay: 0.2 }), 40, 720, 2.8, 0.2)}
+              </g>
+              ${aksiBtn(560, 450, 3.1, 2)}
+              <g style="opacity:0;animation: qbi-flash .9s ease-out 4.6s both"><path d="M658 600 L658 436 Q720 368 782 436 L782 600Z" fill="#fff8d6"/></g>`,
+            cues: [[3.3, "click"], [4.1, "levelup"]]
+          },
+          {
+            dur: 7, step: "3", title: "Baca materi & coba latihan",
+            text: "Di dalam gedung, pelajari materinya dengan teliti, lalu kerjakan latihan.",
+            svg: () => `<rect x="-1200" y="-1400" width="3400" height="2600" fill="#3a2a1d"/>
+              ${[0, 1, 2, 3, 4, 5].map(i => `<path d="M${40 + i * 170} 600 L${40 + i * 170} 300 Q${105 + i * 170} 230 ${170 + i * 170} 300 L${170 + i * 170} 600Z" fill="#4a3624" stroke="#5c442d" stroke-width="4"/>`).join("")}
+              ${ground("inside")}
+              <g style="animation: qbi-rise .7s ease-out .2s both">
+                <path d="M300 560 Q500 530 500 560 L500 300 Q500 280 300 300Z" fill="#fff8e6" stroke="#d6c08f" stroke-width="4"/>
+                <path d="M700 560 Q500 530 500 560 L500 300 Q500 280 700 300Z" fill="#fffdf4" stroke="#d6c08f" stroke-width="4"/>
+                ${[0, 1, 2, 3, 4].map(i => `<rect x="330" y="${340 + i * 38}" width="${140 - (i % 2) * 40}" height="10" rx="5" fill="#cdbb92" style="animation: qbi-grow .5s ease-out ${0.9 + i * 0.15}s both; transform-box: fill-box; transform-origin: 0 50%"/>`).join("")}
+                <text x="600" y="400" text-anchor="middle" font-size="46" fill="#101D38" font-family="'Amiri', 'Scheherazade New', serif" style="animation: qbi-pop .5s ease-out 1.2s both" direction="rtl">بِسْمِ اللّٰهِ</text>
+                <rect x="540" y="430" width="120" height="10" rx="5" fill="#D5A94F" style="animation: qbi-grow .6s ease-out 1.7s both; transform-box: fill-box; transform-origin: 100% 50%"/>
+                <g class="qbi-spark" style="animation-delay:1.8s"><path d="M690 300 l6 16 l16 6 l-16 6 l-6 16 l-6 -16 l-16 -6 l16 -6Z" fill="#F5C542"/></g>
+              </g>
+              <g transform="translate(160 600)">${santri({})}</g>
+              <g class="qbi-pop" style="animation: qbi-pop .45s cubic-bezier(.2,1.6,.4,1) 3.8s both; transform-origin: 815px 420px">
+                <rect x="728" y="330" width="174" height="170" rx="18" fill="#101D38" stroke="#6ee7b7" stroke-width="4"/>
+                <text x="815" y="368" text-anchor="middle" font-size="22" font-weight="900" fill="#6ee7b7">LATIHAN</text>
+                ${[0, 1, 2].map(i => `<g style="animation: qbi-pop .3s ease-out ${4.3 + i * 0.35}s both; transform-origin: 756px ${400 + i * 34}px"><circle cx="756" cy="${400 + i * 34}" r="12" fill="#247B69"/><path d="M750 ${400 + i * 34} l5 5 l9 -10" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/><rect x="778" y="${394 + i * 34}" width="${100 - i * 20}" height="10" rx="5" fill="#2f4a74"/></g>`).join("")}
+              </g>`,
+            cues: [[1.2, "click"], [4.3, "correct"]]
+          },
+          {
+            dur: 7.5, step: "4", title: "Taklukkan Ujian Tantangan",
+            text: `Jawab soal ujian dengan teliti. Capai nilai minimal (KKM ${I.kkm}) agar gedung ini tertaklukkan.`,
+            svg: () => {
+              const score = Math.min(100, Math.max(I.kkm + 10, 85));
+              const bx = 250, bw = 500;
+              return `<rect x="-1200" y="-1400" width="3400" height="2600" fill="#13213f"/>
+              <g style="animation: qbi-rise .6s ease-out .1s both">
+                <rect x="210" y="190" width="580" height="380" rx="26" fill="#101D38" stroke="#D5A94F" stroke-width="5"/>
+                <text x="500" y="236" text-anchor="middle" font-size="24" font-weight="900" fill="#F5C542">UJIAN TANTANGAN</text>
+                <rect x="250" y="256" width="500" height="14" rx="7" fill="#2f4a74"/><rect x="250" y="280" width="360" height="14" rx="7" fill="#2f4a74"/>
+                ${["A", "B", "C", "D"].map((L, i) => {
+                  const x = 250 + (i % 2) * 255, y = 314 + Math.floor(i / 2) * 64;
+                  const good = i === 2;
+                  return `<g><rect x="${x}" y="${y}" width="245" height="52" rx="14" fill="#203858" stroke="#2f4a74" stroke-width="3"/>
+                    ${good ? `<rect x="${x}" y="${y}" width="245" height="52" rx="14" fill="#247B69" stroke="#6ee7b7" stroke-width="4" style="opacity:0;animation: qbi-show .3s ease-out 2.3s forwards"/>` : ""}
+                    <circle cx="${x + 28}" cy="${y + 26}" r="16" fill="#D5A94F"/><text x="${x + 28}" y="${y + 34}" text-anchor="middle" font-size="20" font-weight="900" fill="#101D38">${L}</text>
+                    <rect x="${x + 54}" y="${y + 21}" width="${150 - i * 18}" height="10" rx="5" fill="#3b5683"/>
+                    ${good ? `<text x="${x + 220}" y="${y + 35}" text-anchor="middle" font-size="26" font-weight="900" fill="#fff" style="opacity:0;animation: qbi-show .3s ease-out 2.4s forwards">✓</text>` : ""}</g>`;
+                }).join("")}
+                <g style="animation: qbi-hand 1.4s ease-in-out .7s both"><path d="M0 0 l14 48 l10 -14 l16 18 l10 -8 l-16 -18 l16 -6 Z" fill="#fff" stroke="#101D38" stroke-width="3" stroke-linejoin="round" transform="translate(560 430)"/></g>
+                <rect x="${bx}" y="470" width="${bw}" height="26" rx="13" fill="#203858"/>
+                <rect x="${bx}" y="470" width="${bw * score / 100}" height="26" rx="13" fill="url(#qbiScore)" style="animation: qbi-grow 1.4s ease-out 3.0s both; transform-box: fill-box; transform-origin: 0 50%"/>
+                <line x1="${bx + bw * I.kkm / 100}" y1="460" x2="${bx + bw * I.kkm / 100}" y2="506" stroke="#F5C542" stroke-width="4" stroke-dasharray="6 4"/>
+                <text x="${bx + bw * I.kkm / 100}" y="528" text-anchor="middle" font-size="18" font-weight="900" fill="#F5C542">KKM ${I.kkm}</text>
+                <text x="${bx + bw + 8}" y="${490}" font-size="24" font-weight="900" fill="#6ee7b7" style="opacity:0;animation: qbi-show .3s ease-out 4.3s forwards">${score}</text>
+              </g>
+              <g style="animation: qbi-stamp .5s cubic-bezier(.2,1.8,.4,1) 4.6s both; transform-origin: 500px 380px">
+                <rect x="380" y="340" width="240" height="84" rx="16" fill="#247B69" stroke="#F5C542" stroke-width="6" transform="rotate(-8 500 380)"/>
+                <text x="500" y="398" text-anchor="middle" font-size="46" font-weight="900" fill="#fff" transform="rotate(-8 500 380)">LULUS!</text></g>
+              ${[0, 1, 2, 3, 4, 5].map(i => `<g class="qbi-star" style="animation-delay:${4.8 + i * 0.08}s;--dx:${Math.cos(i * 1.05) * 260}px;--dy:${Math.sin(i * 1.05) * 170 - 40}px"><path d="M500 380 l8 18 l20 2 l-15 13 l5 20 l-18 -10 l-18 10 l5 -20 l-15 -13 l20 -2Z" fill="#F5C542"/></g>`).join("")}`;
+            },
+            cues: [[2.3, "click"], [2.4, "correct"], [4.6, "levelup"], [5.0, "coin"]]
+          },
+          {
+            dur: 8, step: "5", title: "Grand Finale & Sertifikat",
+            text: `Taklukkan semua ${I.n} gedung untuk membuka Grand Finale dan mendapatkan sertifikat!`,
+            svg: () => {
+              const n = Math.max(1, Math.min(8, I.n));
+              const badges = Array.from({ length: n }, (_, i) => {
+                const a = Math.PI * (1 + (i + 0.5) / n);
+                const x = 500 + Math.cos(a) * 330, y = 470 + Math.sin(a) * 240;
+                const c = I.colors[i] || "#247B69";
+                return `<g style="animation: qbi-pop .4s cubic-bezier(.2,1.6,.4,1) ${0.3 + i * 0.45}s both; transform-origin:${x}px ${y}px">
+                  <circle cx="${x}" cy="${y}" r="46" fill="${c}" stroke="#F5C542" stroke-width="6"/>
+                  <text x="${x}" y="${y + 12}" text-anchor="middle" font-size="34" font-weight="900" fill="#fff">${i + 1}</text>
+                  <g style="opacity:0;animation: qbi-show .25s ease-out ${0.55 + i * 0.45}s forwards"><circle cx="${x + 32}" cy="${y - 32}" r="17" fill="#6ee7b7" stroke="#101D38" stroke-width="3"/><path d="M${x + 24} ${y - 32} l6 6 l10 -11" stroke="#101D38" stroke-width="4" fill="none" stroke-linecap="round"/></g></g>`;
+              }).join("");
+              const t = 0.6 + n * 0.45;
+              return `<rect x="-1200" y="-1400" width="3400" height="2600" fill="#101D38"/>
+                <g opacity=".5">${Array.from({ length: 26 }, (_, i) => `<circle cx="${(i * 137) % 1000}" cy="${170 + (i * 71) % 300}" r="${2 + (i % 3)}" fill="#F5C542" class="qbi-twinkle" style="animation-delay:${(i % 7) * 0.3}s"/>`).join("")}</g>
+                ${badges}
+                <g style="animation: qbi-rise .7s cubic-bezier(.2,1.5,.4,1) ${t}s both">
+                  <path d="M440 330 L560 330 L548 410 Q500 450 452 410Z" fill="#F5C542" stroke="#b8860b" stroke-width="5"/>
+                  <path d="M440 345 Q395 345 405 380 Q415 405 452 400" fill="none" stroke="#F5C542" stroke-width="10"/>
+                  <path d="M560 345 Q605 345 595 380 Q585 405 548 400" fill="none" stroke="#F5C542" stroke-width="10"/>
+                  <rect x="488" y="440" width="24" height="40" fill="#d9a92f"/><rect x="452" y="476" width="96" height="22" rx="6" fill="#b8860b"/>
+                  <text x="500" y="392" text-anchor="middle" font-size="30" fill="#8a6200">★</text>
+                </g>
+                <g style="animation: qbi-unroll .9s ease-out ${t + 0.9}s both; transform-box: fill-box; transform-origin: 50% 0">
+                  <rect x="330" y="512" width="340" height="110" rx="10" fill="#fffaf0" stroke="#D5A94F" stroke-width="5"/>
+                  <text x="500" y="552" text-anchor="middle" font-size="26" font-weight="900" fill="#101D38">SERTIFIKAT</text>
+                  <rect x="400" y="568" width="200" height="9" rx="4" fill="#d6c08f"/><rect x="430" y="588" width="140" height="9" rx="4" fill="#e5d6b0"/>
+                  <circle cx="630" cy="596" r="16" fill="#c0392b"/></g>
+                ${Array.from({ length: 18 }, (_, i) => `<rect class="qbi-confetti" x="${60 + i * 52}" y="140" width="12" height="20" rx="3" fill="${["#F5C542", "#6ee7b7", "#ec4899", "#3b82f6"][i % 4]}" style="animation-delay:${t + 0.4 + (i % 6) * 0.15}s"/>`).join("")}`;
+            },
+            cues: [[0.6, "coin"], [1.5, "coin"], [2.4, "coin"], [3.0, "levelup"]]
+          },
+          {
+            dur: 8, step: "", title: "Cara mengendalikan",
+            text: I.touch
+              ? "Joystick kiri untuk berjalan • geser layar untuk memutar kamera • LOMPAT untuk melompat • AKSI untuk bicara & masuk gedung."
+              : "W A S D / tombol panah untuk berjalan • Spasi untuk melompat • E untuk bicara & masuk gedung • seret mouse untuk memutar kamera.",
+            svg: () => I.touch ? `
+              <rect x="-1200" y="-1400" width="3400" height="2600" fill="#13213f"/>
+              <rect x="120" y="230" width="760" height="380" rx="44" fill="#0b1324" stroke="#2f4a74" stroke-width="10"/>
+              <rect x="150" y="258" width="700" height="324" rx="22" fill="#7cc4ea"/>
+              <rect x="150" y="470" width="700" height="112" fill="#e8c78b"/>
+              <g transform="translate(500 520) scale(.55)"><g style="animation: qbi-jump 1.2s ease-in-out 3.2s 3"><g>${santri({ walk: 8, delay: 0.4 })}</g></g></g>
+              <g><circle cx="260" cy="500" r="62" fill="rgba(16,29,56,.75)" stroke="#D5A94F" stroke-width="5"/>
+                <g style="animation: qbi-stick 2.4s ease-in-out .4s 2"><circle cx="260" cy="500" r="28" fill="#247B69" stroke="#D5A94F" stroke-width="4"/></g>
+                <text x="260" y="428" text-anchor="middle" font-size="20" font-weight="900" fill="#101D38">JALAN</text></g>
+              <g style="animation: qbi-press .45s ease-in-out 3.2s 6 alternate; transform-origin: 770px 500px"><circle cx="770" cy="500" r="44" fill="#101D38" stroke="#247B69" stroke-width="6"/><text x="770" y="510" text-anchor="middle" font-size="18" font-weight="900" fill="#6ee7b7">LOMPAT</text></g>
+              <g style="animation: qbi-press .45s ease-in-out 6s 4 alternate; transform-origin: 670px 520px"><circle cx="670" cy="520" r="36" fill="#101D38" stroke="#D5A94F" stroke-width="6"/><text x="670" y="528" text-anchor="middle" font-size="18" font-weight="900" fill="#D5A94F">AKSI</text></g>
+              <g style="animation: qbi-swipe 1.6s ease-in-out 1.6s 1 both"><path d="M0 0 l14 48 l10 -14 l16 18 l10 -8 l-16 -18 l16 -6 Z" fill="#fff" stroke="#101D38" stroke-width="3" transform="translate(470 330)"/></g>
+              <text x="500" y="300" text-anchor="middle" font-size="20" font-weight="800" fill="#101D38" style="opacity:0;animation: qbi-show .3s ease-out 1.6s forwards, qbi-fadeout .3s ease-in 3.3s forwards">geser layar = putar kamera</text>` : `
+              <rect x="-1200" y="-1400" width="3400" height="2600" fill="#13213f"/>
+              ${[["W", 250, 300, 0.4], ["A", 180, 370, 1.0], ["S", 250, 370, 1.6], ["D", 320, 370, 2.2]].map(([k, x, y, d]) => `<g style="animation: qbi-key .4s ease-in-out ${d}s 2 alternate; transform-origin:${x + 30}px ${y + 30}px"><rect x="${x}" y="${y}" width="60" height="60" rx="12" fill="#203858" stroke="#D5A94F" stroke-width="4"/><text x="${x + 30}" y="${y + 41}" text-anchor="middle" font-size="30" font-weight="900" fill="#F5C542">${k}</text></g>`).join("")}
+              <text x="280" y="470" text-anchor="middle" font-size="22" font-weight="800" fill="#EDE3D0">berjalan</text>
+              <g style="animation: qbi-key .4s ease-in-out 3.2s 4 alternate; transform-origin:600px 400px"><rect x="470" y="370" width="260" height="60" rx="12" fill="#203858" stroke="#6ee7b7" stroke-width="4"/><text x="600" y="410" text-anchor="middle" font-size="24" font-weight="900" fill="#6ee7b7">SPASI</text></g>
+              <text x="600" y="470" text-anchor="middle" font-size="22" font-weight="800" fill="#EDE3D0">melompat</text>
+              <g style="animation: qbi-key .4s ease-in-out 5.2s 4 alternate; transform-origin:890px 400px"><rect x="860" y="370" width="60" height="60" rx="12" fill="#203858" stroke="#D5A94F" stroke-width="4"/><text x="890" y="411" text-anchor="middle" font-size="30" font-weight="900" fill="#F5C542">E</text></g>
+              <text x="890" y="470" text-anchor="middle" font-size="22" font-weight="800" fill="#EDE3D0">bicara / masuk</text>`,
+            cues: [[3.2, "jump"], [6.0, "click"]]
+          }
+        ];
+      }
+
+      // ---------- pemutar ----------
+      function el(id) { return document.getElementById(id); }
+      function build() {
+        if (el("qbIntro")) return;
+        const m = document.createElement("div");
+        m.id = "qbIntro";
+        m.className = "qbi hidden";
+        m.setAttribute("role", "dialog");
+        m.setAttribute("aria-modal", "true");
+        m.setAttribute("aria-label", "Animasi cara bermain");
+        m.innerHTML = `
+          <div class="qbi-stage-wrap">
+            <svg id="qbIntroSvg" class="qbi-stage" viewBox="0 150 1000 560" preserveAspectRatio="xMidYMid meet" overflow="visible" aria-hidden="true">
+              <defs><linearGradient id="qbiSky" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="600"><stop offset="0" stop-color="#5fb3e6"/><stop offset=".6" stop-color="#a9daf0"/><stop offset="1" stop-color="#f7e3b6"/></linearGradient><linearGradient id="qbiScore" x1="0" x2="1"><stop offset="0" stop-color="#247B69"/><stop offset="1" stop-color="#6ee7b7"/></linearGradient></defs>
+              <g id="qbIntroScene"></g>
+            </svg>
+            <div class="qbi-title-card" id="qbIntroTitleCard"><p>QURABLOX CITY</p><h2>Kisah Santri Pencari Ilmu</h2></div>
+          </div>
+          <div class="qbi-caption" aria-live="polite">
+            <div class="qbi-cap-head"><span class="qbi-step" id="qbIntroStep"></span><h3 id="qbIntroTitle"></h3></div>
+            <p id="qbIntroText"></p>
+            <div class="qbi-bar">
+              <button type="button" class="qbi-ctl" onclick="IntroStory.prev()" aria-label="Adegan sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
+              <button type="button" class="qbi-ctl" id="qbIntroPause" onclick="IntroStory.togglePause()" aria-label="Jeda"><i class="fa-solid fa-pause"></i></button>
+              <div class="qbi-dots" id="qbIntroDots"></div>
+              <button type="button" class="qbi-ctl" onclick="IntroStory.next()" aria-label="Adegan berikutnya"><i class="fa-solid fa-forward-step"></i></button>
+              <button type="button" class="qbi-ctl" data-music-toggle onclick="BgMusic.toggle()" aria-label="Musik"><i class="fa-solid fa-music"></i></button>
+            </div>
+            <div class="qbi-end hidden" id="qbIntroEnd">
+              <button type="button" class="qbi-go" id="qbIntroGo" onclick="IntroStory.finish(true)"><i class="fa-solid fa-gamepad"></i> <span>Ayo Mulai Petualangan!</span></button>
+              <button type="button" class="qbi-again" onclick="IntroStory.goto(0)"><i class="fa-solid fa-rotate-left"></i> Ulangi</button>
+            </div>
+          </div>
+          <button type="button" class="qbi-skip" onclick="IntroStory.finish(false)">Lewati <i class="fa-solid fa-forward"></i></button>`;
+        document.body.appendChild(m);
+        document.addEventListener("keydown", (e) => {
+          if (!isOpen()) return;
+          if (e.key === "Escape") { e.preventDefault(); finish(false); }
+          else if (e.key === "ArrowRight") { e.preventDefault(); next(); }
+          else if (e.key === "ArrowLeft") { e.preventDefault(); prev(); }
+          else if (e.key === " " || e.code === "Space") { e.preventDefault(); togglePause(); }
+        }, true);
+        const fit = () => {
+          const svg = el("qbIntroSvg"); if (!svg) return;
+          const portrait = window.innerHeight > window.innerWidth * 1.15;
+          svg.setAttribute("viewBox", portrait ? "90 170 820 520" : "0 150 1000 560");
+        };
+        window.addEventListener("resize", fit);
+        fit();
+      }
+      function isOpen() { const m = el("qbIntro"); return !!(m && !m.classList.contains("hidden")); }
+
+      function render(i) {
+        const list = st.scenes;
+        st.scene = Math.max(0, Math.min(list.length - 1, i));
+        st.elapsed = 0; st.t0 = performance.now(); st.cuesDone = new Set();
+        const sc = list[st.scene];
+        el("qbIntroScene").innerHTML = sc.svg();
+        el("qbIntroStep").textContent = sc.step ? "Langkah " + sc.step : (st.scene === 0 ? "Pembuka" : "Kontrol");
+        el("qbIntroStep").classList.toggle("hidden", false);
+        el("qbIntroTitle").textContent = sc.title;
+        el("qbIntroText").textContent = sc.text;
+        const cap = document.querySelector("#qbIntro .qbi-caption");
+        cap.classList.remove("qbi-cap-in"); void cap.offsetWidth; cap.classList.add("qbi-cap-in");
+        el("qbIntroDots").innerHTML = list.map((_, k) => `<button type="button" class="qbi-dot ${k === st.scene ? "on" : ""} ${k < st.scene ? "done" : ""}" onclick="IntroStory.goto(${k})" aria-label="Adegan ${k + 1}"><span style="${k === st.scene ? `animation-duration:${sc.dur}s` : ""}"></span></button>`).join("");
+        const last = st.scene === list.length - 1;
+        el("qbIntroEnd").classList.toggle("hidden", !last);
+        const go = el("qbIntroGo");
+        if (go) go.querySelector("span").textContent = st.opts.source === "play" ? "Ayo Mulai Petualangan!" : "Main Sekarang";
+        const tc = el("qbIntroTitleCard");
+        if (tc) tc.classList.toggle("show", st.scene === 0);
+        setPaused(false);
+      }
+      function sfx(name) {
+        try {
+          if (name === "click") GameAudio.playClick();
+          else if (name === "coin") GameAudio.playCoin();
+          else if (name === "correct") GameAudio.playCorrect();
+          else if (name === "levelup") GameAudio.playLevelUp();
+          else if (name === "jump") GameAudio.playJump();
+        } catch (e) {}
+      }
+      function loop() {
+        if (!st || !isOpen()) return;
+        if (!st.paused) {
+          const now = performance.now();
+          st.elapsed += (now - st.t0) / 1000; st.t0 = now;
+          const sc = st.scenes[st.scene];
+          (sc.cues || []).forEach((c, k) => { if (!st.cuesDone.has(k) && st.elapsed >= c[0]) { st.cuesDone.add(k); sfx(c[1]); } });
+          if (st.elapsed >= sc.dur && st.scene < st.scenes.length - 1) render(st.scene + 1);
+        } else { st.t0 = performance.now(); }
+        st.raf = requestAnimationFrame(loop);
+      }
+      function setPaused(p) {
+        if (!st) return;
+        st.paused = !!p;
+        const m = el("qbIntro"); if (m) m.classList.toggle("paused", st.paused);
+        const b = el("qbIntroPause");
+        if (b) { b.innerHTML = `<i class="fa-solid ${st.paused ? "fa-play" : "fa-pause"}"></i>`; b.setAttribute("aria-label", st.paused ? "Lanjutkan" : "Jeda"); }
+      }
+      function togglePause() { if (st) setPaused(!st.paused); }
+      function next() { if (st) { if (st.scene < st.scenes.length - 1) render(st.scene + 1); } }
+      function prev() { if (st) render(st.scene - 1); }
+      function goto(i) { if (st) render(i); }
+
+      function play(opts) {
+        build();
+        const o = Object.assign({ source: "manual", onDone: null }, opts || {});
+        const I = info();
+        st = { scenes: scenes(I), scene: 0, elapsed: 0, t0: performance.now(), paused: false, raf: null, opts: o, cuesDone: new Set() };
+        const m = el("qbIntro");
+        m.classList.remove("hidden", "closing");
+        void m.offsetWidth;
+        m.classList.add("open");
+        try { if (typeof BgMusic !== "undefined" && QBPrefs.get("music") !== "off") BgMusic.start(); } catch (e) {}
+        try { BgMusic.updateUi(); } catch (e) {}
+        render(0);
+        cancelAnimationFrame(st.raf);
+        st.raf = requestAnimationFrame(loop);
+        return true;
+      }
+      function finish(startGame) {
+        if (!st) return;
+        const o = st.opts;
+        cancelAnimationFrame(st.raf);
+        QBPrefs.set("introSeen", true);
+        const m = el("qbIntro");
+        m.classList.remove("open"); m.classList.add("closing");
+        setTimeout(() => { m.classList.add("hidden"); m.classList.remove("closing", "paused"); el("qbIntroScene").innerHTML = ""; }, 380);
+        st = null;
+        // Dari tombol "Main Sekarang": lanjut ke pemilihan karakter, baik ditonton sampai habis maupun dilewati
+        if (o.source === "play" && typeof o.onDone === "function") { setTimeout(o.onDone, 200); return; }
+        if (startGame) setTimeout(() => { try { GameApp.openPlayerSetup({ skipIntro: true }); } catch (e) {} }, 200);
+      }
+      function shouldAutoPlay() {
+        const mode = QBPrefs.get("intro");
+        if (mode === "off") return false;
+        if (mode === "always") return true;
+        return !QBPrefs.get("introSeen");
+      }
+      function onLanding() {
+        const hud = document.getElementById("gameHudContainer");
+        return !hud || hud.classList.contains("hidden");
+      }
+      function init() {
+        build();
+        const orig = GameApp.openPlayerSetup;
+        GameApp.openPlayerSetup = function (arg) {
+          const skip = (arg && arg.skipIntro) || suppress || isOpen();
+          suppress = false;
+          if (!skip && onLanding() && shouldAutoPlay()) {
+            play({ source: "play", onDone: () => orig.call(GameApp) });
+            return;
+          }
+          return orig.call(GameApp);
+        };
+        // "Ganti Pemain" dari menu jeda tidak memutar animasi lagi
+        try {
+          if (typeof ReplayManager !== "undefined" && ReplayManager.switchPlayer) {
+            const sw = ReplayManager.switchPlayer;
+            ReplayManager.switchPlayer = function () { suppress = true; setTimeout(() => { suppress = false; }, 1500); return sw.apply(this, arguments); };
+          }
+        } catch (e) {}
+      }
+      return { init, play, finish, next, prev, goto, togglePause, isOpen, shouldAutoPlay, getState: () => st ? { scene: st.scene, total: st.scenes.length, paused: st.paused, source: st.opts.source } : null };
+    })();
+    if (typeof window !== "undefined") window.IntroStory = IntroStory;
+
+    /* =======================================================================
+       MODULE 28: BERANDA RINGKAS + "INFO GAME" (v6)
+       Beranda hanya berisi judul, satu kalimat, dan tiga tombol. Semua penjelasan
+       panjang (zona, cara bermain, kontrol, fitur, area guru, FAQ) dipindah ke
+       jendela "Info Game" bertab dengan animasi buka.
+       Kartu zona TIDAK lagi membuka materi/latihan/ujian — itu hanya bisa dibuka
+       dengan masuk ke gedung di dalam kota.
+       ======================================================================= */
+    const LandingLite = (() => {
+      const esc = (v) => QBUtil.escapeHtml(v);
+      const TABS = [
+        { id: "zona", label: "Zona", icon: "fa-map-location-dot" },
+        { id: "cara", label: "Cara Bermain", icon: "fa-route", section: "cara-bermain" },
+        { id: "kontrol", label: "Kontrol", icon: "fa-gamepad", section: "panduan-kontrol" },
+        { id: "fitur", label: "Fitur", icon: "fa-star", section: "fitur" },
+        { id: "guru", label: "Untuk Guru", icon: "fa-chalkboard-user", section: "area-guru" },
+        { id: "faq", label: "Tanya Jawab", icon: "fa-circle-question", section: "faq" }
+      ];
+      let current = "zona", built = false;
+
+      function build() {
+        if (built) return;
+        const m = document.createElement("div");
+        m.id = "modalGameInfo";
+        m.className = "qb-info hidden";
+        m.setAttribute("role", "dialog");
+        m.setAttribute("aria-modal", "true");
+        m.setAttribute("aria-labelledby", "qbInfoTitle");
+        m.innerHTML = `
+          <div class="qb-info-backdrop" onclick="LandingLite.closeInfo()"></div>
+          <div class="qb-info-shell">
+            <div class="qb-info-glow"></div>
+            <div class="qb-info-head">
+              <div class="qb-info-badge"><i class="fa-solid fa-book-open"></i></div>
+              <div class="min-w-0">
+                <h3 id="qbInfoTitle" class="font-display text-lg sm:text-xl font-black text-white leading-tight">Info Game</h3>
+                <p class="text-[11px] text-[#D9BE96]">Qurablox City • <span data-subject-label="full">Ilmu Tajwid Kelas IX SMP</span></p>
+              </div>
+              <button type="button" class="qb-info-x" onclick="LandingLite.closeInfo()" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="qb-info-tabs" role="tablist">
+              ${TABS.map(t => `<button type="button" role="tab" data-info-tab="${t.id}" onclick="LandingLite.showTab('${t.id}')"><i class="fa-solid ${t.icon}"></i><span>${t.label}</span></button>`).join("")}
+              <span class="qb-info-ink" aria-hidden="true"></span>
+            </div>
+            <div class="qb-info-body">
+              ${TABS.map(t => `<div class="qb-info-panel hidden" data-info-panel="${t.id}" role="tabpanel"></div>`).join("")}
+            </div>
+            <div class="qb-info-foot">
+              <button type="button" class="qb-info-cta" onclick="LandingLite.closeInfo(); GameApp.openPlayerSetup()"><i class="fa-solid fa-gamepad"></i> Main Sekarang</button>
+              <button type="button" class="qb-info-cta ghost" onclick="LandingLite.closeInfo(); IntroStory.play({ source: 'info' })"><i class="fa-solid fa-film"></i> Tonton Cara Bermain</button>
+            </div>
+          </div>`;
+        document.body.appendChild(m);
+        // Pindahkan bagian panjang beranda ke dalam tab (isi & tombolnya tetap sama)
+        TABS.forEach(t => {
+          if (!t.section) return;
+          const sec = document.getElementById(t.section);
+          const panel = m.querySelector(`[data-info-panel="${t.id}"]`);
+          if (sec && panel) { sec.classList.add("qb-in-info"); panel.appendChild(sec); }
+        });
+        const zona = document.getElementById("zona-tajwid");
+        if (zona) zona.classList.add("hidden");
+        document.addEventListener("keydown", (e) => { if (e.key === "Escape" && isOpen()) closeInfo(); });
+        built = true;
+      }
+
+      function playerProgress() {
+        try {
+          const d = StorageManager.getData();
+          const p = d.players[d.activePlayerIndex || 0] || {};
+          return new Set([].concat(p.challengeRewardedBuildings || []));
+        } catch (e) { return new Set(); }
+      }
+      function renderZones() {
+        const panel = document.querySelector('[data-info-panel="zona"]');
+        if (!panel) return;
+        const list = ContentManager.listBuildings();
+        const done = playerProgress();
+        panel.innerHTML = `
+          <p class="qb-info-lead"><i class="fa-solid fa-lock text-[#D5A94F]"></i> Materi, latihan, dan ujian <b>tersimpan di dalam gedung</b>. Temukan gedungnya di kota, lalu tekan <b>AKSI</b> di depan pintu untuk masuk.</p>
+          <div class="qb-zone-grid">
+            ${list.map((b, i) => {
+              const hex = QBUtil.numToHex(b.color);
+              const txt = b.accentText || QBUtil.lightenHex(hex, 0.45);
+              const ok = done.has(b.id);
+              return `<div class="qb-zone-card" style="--zc:${hex};--zt:${txt};animation-delay:${80 + i * 70}ms">
+                <div class="qb-zone-num">${i + 1}</div>
+                <div class="min-w-0 flex-1">
+                  <p class="qb-zone-ch">${esc((b.chapter || "Bab " + (i + 1)).toUpperCase())}</p>
+                  <h4>${esc(GameApp.getBuildingDisplayName(b))}</h4>
+                  <p class="qb-zone-sub">${esc(b.subtitle || b.academyName || "")}</p>
+                </div>
+                <div class="qb-zone-state ${ok ? "ok" : ""}">${ok ? '<i class="fa-solid fa-circle-check"></i><span>Ditaklukkan</span>' : '<i class="fa-solid fa-lock"></i><span>Masuk di kota</span>'}</div>
+              </div>`;
+            }).join("")}
+          </div>
+          <div class="qb-zone-finale" style="animation-delay:${120 + list.length * 70}ms"><i class="fa-solid fa-crown"></i> Taklukkan semua ${list.length} gedung untuk membuka <b>Grand Finale</b> & sertifikat.</div>`;
+      }
+      function moveInk() {
+        const btn = document.querySelector(`#modalGameInfo [data-info-tab="${current}"]`);
+        const ink = document.querySelector("#modalGameInfo .qb-info-ink");
+        if (!btn || !ink) return;
+        ink.style.width = btn.offsetWidth + "px";
+        ink.style.transform = `translateX(${btn.offsetLeft}px)`;
+        try { btn.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" }); } catch (e) {}
+      }
+      function showTab(id) {
+        if (!TABS.some(t => t.id === id)) id = "zona";
+        current = id;
+        document.querySelectorAll("#modalGameInfo [data-info-tab]").forEach(b => {
+          const on = b.dataset.infoTab === id;
+          b.classList.toggle("active", on);
+          b.setAttribute("aria-selected", on ? "true" : "false");
+        });
+        document.querySelectorAll("#modalGameInfo [data-info-panel]").forEach(p => {
+          const on = p.dataset.infoPanel === id;
+          p.classList.toggle("hidden", !on);
+          if (on) { p.classList.remove("qb-panel-in"); void p.offsetWidth; p.classList.add("qb-panel-in"); }
+        });
+        if (id === "zona") renderZones();
+        const body = document.querySelector("#modalGameInfo .qb-info-body"); if (body) body.scrollTop = 0;
+        requestAnimationFrame(moveInk);
+        try { GameAudio.playClick(); } catch (e) {}
+      }
+      function isOpen() { const m = document.getElementById("modalGameInfo"); return !!(m && !m.classList.contains("hidden")); }
+      function openInfo(tab) {
+        build();
+        const m = document.getElementById("modalGameInfo");
+        m.classList.remove("hidden", "closing");
+        void m.offsetWidth;
+        m.classList.add("open");
+        showTab(tab || current || "zona");
+        try { GameApp.applySubjectLabels(); } catch (e) {}
+        setTimeout(moveInk, 420);
+      }
+      function closeInfo() {
+        const m = document.getElementById("modalGameInfo");
+        if (!m || m.classList.contains("hidden")) return;
+        m.classList.remove("open");
+        m.classList.add("closing");
+        setTimeout(() => { m.classList.add("hidden"); m.classList.remove("closing"); }, 260);
+      }
+      function lockedZoneNotice(b) {
+        const name = b ? esc(GameApp.getBuildingDisplayName(b)) : "gedung ini";
+        if (typeof PlatformBoot !== "undefined") {
+          PlatformBoot.systemToast(`<b><i class="fa-solid fa-lock"></i> Materi ada di dalam ${name}</b><span>Tekan MAIN SEKARANG, cari gedungnya di kota, lalu tekan AKSI di depan pintu untuk masuk.</span>`, 6000);
+        }
+      }
+      function init() {
+        build();
+        window.addEventListener("resize", () => { if (isOpen()) moveInk(); });
+        // tautan lama ke bagian beranda (#cara-bermain, #faq, …) membuka tab yang sesuai
+        document.addEventListener("click", (e) => {
+          const a = e.target.closest && e.target.closest('a[href^="#"]');
+          if (!a) return;
+          const hash = a.getAttribute("href").slice(1);
+          const tab = TABS.find(t => t.section === hash) || (hash === "zona-tajwid" ? TABS[0] : null);
+          if (tab) { e.preventDefault(); openInfo(tab.id); }
+        }, true);
+      }
+      return { init, openInfo, closeInfo, showTab, isOpen, lockedZoneNotice, renderZones };
+    })();
+    if (typeof window !== "undefined") window.LandingLite = LandingLite;
+
+
+    const QBv6 = {
+      init() {
+        BgMusic.init();
+        QBControls.init();
+        LandingLite.init();
+        IntroStory.init();
+      }
+    };
+    if (typeof window !== "undefined") window.QBv6 = QBv6;
+
     // Initialize application on DOM ready (v5: pulihkan dari IndexedDB bila perlu, lalu GameApp, lalu platform)
     window.addEventListener("DOMContentLoaded", async () => {
       let pre = { checked: false, restored: false };
       try { pre = await PlatformBoot.preInit(); } catch (e) { console.warn("PlatformBoot.preInit", e); }
       GameApp.init();
       PlatformBoot.afterInit(pre);
+      try { QBv6.init(); } catch (e) { console.warn("QBv6.init", e); }
     });
   </script>
 
@@ -21989,6 +23338,8 @@ module.exports = QRCode;
         <button type="button" class="qb-pause-btn" onclick="PauseMenu.action('history')"><i class="fa-solid fa-chart-column"></i><span>Riwayatku</span></button>
         <button type="button" class="qb-pause-btn" onclick="PauseMenu.action('settings')"><i class="fa-solid fa-gear"></i><span>Pengaturan</span></button>
         <button type="button" class="qb-pause-btn" onclick="PauseMenu.action('fullscreen')"><i class="fa-solid fa-expand"></i><span id="pauseFsLabel">Layar Penuh</span></button>
+        <button type="button" class="qb-pause-btn" data-music-toggle onclick="BgMusic.toggle()"><i class="fa-solid fa-music"></i><span data-music-label>Musik</span></button>
+        <button type="button" class="qb-pause-btn" onclick="PauseMenu.close(); IntroStory.play({ source: 'pause' })"><i class="fa-solid fa-film"></i><span>Cara Bermain</span></button>
       </div>
       <button type="button" id="pauseBtnPlayAgain" class="qb-pause-btn again wide" onclick="PauseMenu.action('replay')"><i class="fa-solid fa-rotate-right"></i><span>Main Lagi (Putaran Baru)</span></button>
       <button type="button" id="pauseBtnExit" class="qb-pause-btn exit wide" onclick="PauseMenu.action('exit')"><i class="fa-solid fa-house"></i><span>Keluar ke Beranda</span></button>
