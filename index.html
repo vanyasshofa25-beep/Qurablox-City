@@ -475,6 +475,49 @@
     .qb-landing-zone-card:hover { transform: translateY(-4px); }
     @media (prefers-reduced-motion: reduce) { .qb-fade-up, .qb-pop, .qb-modal-shell, .qb-feedback, .qb-modal-accent { animation: none !important; } }
 
+    /* ===================== v7: joystick mengambang ===================== */
+    #qbJoyZone { position: absolute; left: 0; bottom: 0; width: 50%; height: 62%; z-index: 25; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; pointer-events: auto; }
+    #mobileJoystickContainer { transition: opacity .2s; opacity: .8; }
+    #mobileJoystickContainer.qb-joy-floating { opacity: 1; transition: none; }
+    #mobileJoystickThumb { transition: none !important; }
+    #hudInteractionPrompt { z-index: 35; }
+
+    /* ===================== v7: minimap & penunjuk arah ===================== */
+    #qbNav { position: absolute; inset: 0; pointer-events: none; z-index: 30; }
+    #qbNav.hidden { display: none; }
+    .qb-minimap { position: absolute; top: 96px; left: 12px; width: 104px; height: 104px; padding: 0; border-radius: 999px; overflow: hidden; pointer-events: auto; background: #101D38; box-shadow: 0 8px 24px rgba(0,0,0,.4); border: 0; }
+    .qb-minimap canvas { width: 100%; height: 100%; display: block; }
+    .qb-mm-up { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #101D38; text-shadow: 0 0 2px #fff; pointer-events: none; }
+    .qb-guide { position: absolute; top: 96px; left: 124px; display: flex; align-items: center; gap: .55rem; padding: .45rem .8rem .45rem .5rem; border-radius: 16px; pointer-events: auto; background: rgba(16,29,56,.92); border: 2px solid rgba(245,197,66,.85); color: #EDE3D0; box-shadow: 0 8px 22px rgba(0,0,0,.35); text-align: left; max-width: 70vw; backdrop-filter: blur(6px); }
+    .qb-guide-arrow { width: 38px; height: 38px; flex: none; transition: transform .12s linear; filter: drop-shadow(0 2px 2px rgba(0,0,0,.4)); }
+    .qb-guide-txt { display: flex; flex-direction: column; min-width: 0; }
+    .qb-guide-txt b { font-size: 13px; color: #fff; font-weight: 900; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .qb-guide-txt small { font-size: 11px; color: #F5C542; font-weight: 800; line-height: 1.2; }
+    .qb-guide.qb-guide-here { border-color: #6ee7b7; animation: qbGuideHere 1s ease-in-out infinite; }
+    .qb-guide.qb-guide-here small { color: #6ee7b7; }
+    @keyframes qbGuideHere { 50% { box-shadow: 0 0 0 6px rgba(110,231,183,.25), 0 8px 22px rgba(0,0,0,.35); } }
+    .qb-guide.qb-guide-off { border-color: rgba(148,163,184,.6); }
+    .qb-nav-picker { position: fixed; inset: 0; margin: auto; height: max-content; z-index: 60; width: min(92vw, 380px); max-height: 74vh; overflow-y: auto; padding: .8rem; border-radius: 20px; background: linear-gradient(160deg, #142444, #0b1324); border: 1.5px solid rgba(213,169,79,.6); box-shadow: 0 24px 60px rgba(0,0,0,.6); pointer-events: auto; animation: qbPanelIn .25s ease-out both; }
+    .qb-nav-picker.hidden { display: none; }
+    .qb-nav-head { display: flex; align-items: center; justify-content: space-between; padding: .1rem .2rem .6rem; color: #F5C542; font-size: 14px; }
+    .qb-nav-head button { width: 32px; height: 32px; border-radius: 999px; background: #203858; color: #D9BE96; }
+    .qb-nav-row { width: 100%; display: flex; align-items: center; gap: .6rem; padding: .55rem .6rem; margin-bottom: .35rem; border-radius: 14px; background: #101D38; border: 1px solid #203858; color: #EDE3D0; }
+    .qb-nav-row.on { border-color: #F5C542; background: rgba(245,197,66,.12); }
+    .qb-nav-row b { display: block; font-size: 13px; color: #fff; }
+    .qb-nav-row small { display: block; font-size: 10.5px; color: #D9BE96; }
+    .qb-nav-num { width: 32px; height: 32px; flex: none; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 13px; }
+    .qb-nav-dist { font-size: 11px; font-weight: 800; color: #F5C542; white-space: nowrap; }
+    .qb-npc-hint { margin-top: .55rem; padding: .5rem .65rem; border-radius: 10px; font-size: 12px; line-height: 1.4; color: #FDE68A; background: rgba(245,197,66,.12); border-left: 3px solid #F5C542; }
+    .qb-npc-hint:empty { display: none; }
+    @media (max-width: 767px) { #qbActionHint { bottom: calc(env(safe-area-inset-bottom, 0px) + 10.5rem); } }
+
+    /* petunjuk interaksi ringkas di layar sentuh */
+    body.qb-touch #hudInteractionPrompt { bottom: calc(env(safe-area-inset-bottom, 0px) + 9.6rem); max-width: 86vw; }
+    body.qb-touch #hudInteractionPrompt > div { padding: .5rem .6rem .5rem .8rem; gap: .6rem; }
+    body.qb-touch #hudInteractionPrompt > div > div:first-child { display: none; }
+    body.qb-touch #hudPromptText { white-space: nowrap; font-size: 13px; }
+    body.qb-touch #hudPromptSub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52vw; }
+
     /* ===================== v6: kontrol HP ===================== */
     #btnMobileJump, #btnMobileAction, #mobileJoystickContainer, .qb-hud-btn, .qb-pause-btn, #gameHudContainer button { touch-action: manipulation; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
     #btnMobileJump, #btnMobileAction { touch-action: none; }
@@ -887,13 +930,13 @@
             </div>
 
             <p class="text-xs uppercase font-extrabold tracking-widest text-[#D5A94F] mb-1 font-mono">
-              Welcome to the World of Qur'an!
+              Selamat datang di Kota Ilmu!
             </p>
 
             <h1 class="font-display text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-4">
               <span class="text-white">Jelajahi Kota Ilmu, </span><br>
               <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#D5A94F] via-[#EDE3D0] to-[#247B69] text-glow-gold">
-                Taklukkan Tajwid!
+                Taklukkan <span data-subject-label="short">Tajwid</span>!
               </span>
             </h1>
 
@@ -1023,7 +1066,7 @@
             </div>
             <h4 class="font-display text-lg font-bold text-white mb-2">Sistem Misi & Quest RPG</h4>
             <p class="text-xs text-[#D9BE96] leading-relaxed">
-              Misi utama 5 bab tajwid, misi sampingan warga NPC, dan perburuan 5 kitab tajwid langka yang tersebar di kota.
+              Misi utama tiap bab, misi sampingan warga kota, dan perburuan 5 kitab langka yang tersebar di kota.
             </p>
           </div>
 
@@ -1033,7 +1076,7 @@
             </div>
             <h4 class="font-display text-lg font-bold text-white mb-2">Warga Kota (NPC) Interaktif</h4>
             <p class="text-xs text-[#D9BE96] leading-relaxed">
-              Ustaz Ahmad, Ustazah Maryam, Pustakawan Amira, dan Pedagang Salim siap menyapa dan memberikan tantangan kuis tajwid.
+              Warga kota (jumlahnya diatur guru) siap menyapa, memberi kuis berhadiah koin, dan menunjukkan arah ke gedung.
             </p>
           </div>
 
@@ -1094,7 +1137,7 @@
             Cara Bermain di Qurablox City
           </h2>
           <p class="text-[#D9BE96] text-sm sm:text-base leading-relaxed">
-            Hanya butuh empat langkah sederhana untuk memulai petualangan menaklukkan ilmu tajwid di kota impianmu.
+            Hanya butuh empat langkah sederhana untuk memulai petualangan menaklukkan ilmu <span data-subject-label="short">Tajwid</span> di kota impianmu.
           </p>
         </div>
 
@@ -1119,7 +1162,7 @@
             </div>
             <h3 class="font-display text-lg font-bold text-white mb-2">Jelajahi Kota 3D</h3>
             <p class="text-xs text-[#D9BE96] leading-relaxed mb-4">
-              Gunakan tombol W/A/S/D atau Virtual Joystick untuk menjelajahi jalanan Qurablox City. Sapa warga NPC, cari 5 Kitab Tajwid tersembunyi, dan temukan pintu akademi.
+              Gunakan tombol W/A/S/D atau Virtual Joystick untuk menjelajahi jalanan Qurablox City. Sapa warga, cari 5 kitab tersembunyi, dan ikuti panah emas serta minimap untuk menemukan pintu gedung.
             </p>
             <div class="p-2.5 rounded-xl bg-[#0b1324] border border-[#203858] text-[11px] text-[#6ee7b7] font-semibold flex items-center gap-2">
               <i class="fa-solid fa-person-walking"></i> Bebas Berkeliling Kota
@@ -1613,6 +1656,8 @@
         </div>
       </div>
 
+      <!-- v7: area joystick mengambang — sentuh di mana saja di separuh kiri layar -->
+      <div id="qbJoyZone" class="solo-touch-ctrl" aria-hidden="true"></div>
       <!-- Solo Mobile & Tablet Touch Joystick -->
       <div id="mobileJoystickContainer" class="absolute safe-bottom-ctrl safe-left-ctrl w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-[#101D38]/80 border-2 border-[#D5A94F]/60 backdrop-blur-md pointer-events-auto solo-touch-ctrl flex items-center justify-center touch-none shadow-2xl select-none z-30">
         <div class="w-20 h-20 rounded-full border border-[#D5A94F]/30 pointer-events-none absolute"></div>
@@ -2250,7 +2295,7 @@
           <i class="fa-solid fa-book-medical"></i> Generator Soal Lokal
         </button>
         <button id="tabBtn_npcquiz" onclick="TeacherAndSync.switchTab('npcquiz')" class="px-4 py-2 rounded-xl bg-[#203858] text-[#D9BE96] hover:text-white flex items-center gap-2 whitespace-nowrap">
-          <i class="fa-solid fa-users-line"></i> Kelola Kuis 7 Warga
+          <i class="fa-solid fa-users-line"></i> Warga Kota
         </button>
         <button id="tabBtn_finale" onclick="TeacherAndSync.switchTab('finale')" class="px-4 py-2 rounded-xl bg-[#203858] text-[#D9BE96] hover:text-white flex items-center gap-2 whitespace-nowrap">
           <i class="fa-solid fa-crown"></i> Grand Finale &amp; Sertifikat
@@ -2272,6 +2317,8 @@
         <!-- Tab 1: History -->
                 <!-- Tab 7: Kelola Kuis 7 Warga (Flash Patch 10H) -->
         <div id="tabContent_npcquiz" class="space-y-4 hidden">
+          <div id="tsCitizensHost" class="space-y-4"></div>
+          <div id="qbLegacyNpcEditor" class="hidden space-y-4">
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#0b1324] p-4 rounded-2xl border border-[#203858]">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl bg-[#D5A94F]/20 text-[#D5A94F] flex items-center justify-center text-lg">
@@ -2396,6 +2443,7 @@
               </div>
               <p class="text-[10px] text-[#D9BE96]/60 text-center pt-2">Data kuis ini tersimpan aman di profil guru dan aktif di gameplay Solo &amp; Co-op.</p>
             </div>
+          </div>
           </div>
         </div>
 
@@ -4464,11 +4512,11 @@
       const SLOT_DEFS = {
         s1: { posX: -45, posZ: -35, label: "Barat Laut Plaza" },
         s2: { posX: 45, posZ: -35, label: "Timur Laut Plaza" },
-        s3: { posX: -55, posZ: 25, label: "Barat Daya Plaza" },
-        s4: { posX: 55, posZ: 25, label: "Tenggara Plaza" },
+        s3: { posX: -55, posZ: 25, label: "Barat Daya Plaza", face: "n" },
+        s4: { posX: 55, posZ: 25, label: "Tenggara Plaza", face: "n" },
         s5: { posX: 0, posZ: -65, label: "Utara (Jalan Masjid)" },
-        s6: { posX: -62, posZ: 66, label: "Distrik Selatan Barat" },
-        s7: { posX: 62, posZ: 66, label: "Distrik Selatan Timur" },
+        s6: { posX: -62, posZ: 66, label: "Distrik Selatan Barat", face: "n" },
+        s7: { posX: 62, posZ: 66, label: "Distrik Selatan Timur", face: "n" },
         s8: { posX: -78, posZ: -55, label: "Distrik Barat Jauh" },
         s9: { posX: 78, posZ: -55, label: "Distrik Timur Jauh" }
       };
@@ -4835,7 +4883,8 @@
           b.posX = pos.posX;
           b.posZ = pos.posZ;
           b.doorX = pos.posX;
-          b.doorZ = pos.posZ + 10.5;
+          b.facing = pos.face === "n" ? "n" : "s";
+          b.doorZ = pos.posZ + (b.facing === "n" ? -10.5 : 10.5); // v7: pintu menghadap alun-alun
           b.radius = 14;
           b.__inPack = true;
           if (!b.displayName) b.displayName = b.name;
@@ -5173,6 +5222,7 @@
           };
         });
         const side = QUEST_DATA.filter(q => q.category === "side").map(q => Object.assign({}, q));
+        try { if (typeof window !== "undefined" && window.__qbCitizenHooks) window.__qbCitizenHooks.adjustSideQuests(side, isDefault); } catch (czErr) {}
         const rajin = side.find(q => q.id === "misi_rajin_belajar");
         if (rajin) {
           rajin.target = Math.max(1, Math.min(3, main.length));
@@ -5928,7 +5978,7 @@
             p.booksFound = Array.isArray(p.booksFound) ? p.booksFound : [];
             
             // Clean, validate and reconcile 7 NPC Citizen ledger
-            const VALID_NPCS = ["npc_ahmad", "npc_maryam", "npc_mansur", "npc_bilal", "npc_hasan", "npc_amira", "npc_salim"];
+            const VALID_NPCS = { includes: (id) => /^(npc|cz)_[a-z0-9_]+$/i.test(String(id)) }; // v7: warga dinamis
             p.npcTriviaRewarded = Array.isArray(p.npcTriviaRewarded) 
               ? Array.from(new Set(p.npcTriviaRewarded.filter(id => VALID_NPCS.includes(id))))
               : [];
@@ -5937,9 +5987,11 @@
             if (!p.questProgress["misi_bantu_warga"]) {
               p.questProgress["misi_bantu_warga"] = { current: 0, completed: false, claimed: false };
             }
-            const npcCount = Math.min(7, p.npcTriviaRewarded.length);
+            const czHooks = (typeof window !== "undefined") ? window.__qbCitizenHooks : null;
+            const czTarget = czHooks ? czHooks.target() : 7;
+            const npcCount = czHooks ? Math.min(czTarget, czHooks.helped(p)) : Math.min(7, p.npcTriviaRewarded.length);
             p.questProgress["misi_bantu_warga"].current = npcCount;
-            if (npcCount >= 7) {
+            if (npcCount >= czTarget) {
               p.questProgress["misi_bantu_warga"].completed = true;
             }
 
@@ -7725,7 +7777,7 @@ ${errMsg}`);
           for (const hb of houseBoxes) if (x > hb[0] - hb[2] / 2 - 2.5 && x < hb[0] + hb[2] / 2 + 2.5 && z > hb[1] - 9.5 && z < hb[1] + 9.5) return false;
           for (const sd of slotDefs) {
             if (x > sd.posX - 11 && x < sd.posX + 11 && z > sd.posZ - 11 && z < sd.posZ + 11) return false;
-            if (Math.hypot(x - sd.posX, z - (sd.posZ + 10.5)) < 6.5) return false;
+            if (Math.hypot(x - sd.posX, z - (sd.posZ + (sd.face === "n" ? -10.5 : 10.5))) < 6.5) return false;
           }
           for (const lc of lampCoords) if (Math.hypot(x - lc[0], z - lc[1]) < 3) return false;
           if (Math.abs(z - 84) < 5 && Math.abs(x) < 15) return false;
@@ -8215,6 +8267,7 @@ ${errMsg}`);
         const accent = (typeof b.color === "number") ? b.color : 0x247B69;
         const group = new THREE.Group();
         group.position.set(b.posX, 0, b.posZ);
+        if (b.facing === "n") group.rotation.y = Math.PI; // v7: pintu & papan nama menghadap alun-alun
 
         const hexColorStr = "#" + accent.toString(16).padStart(6, '0');
 
@@ -8396,7 +8449,7 @@ ${errMsg}`);
         Object.values(GAME_DATA.buildings).forEach(b => {
           let meta = academyMeta[b.id];
           const accent = (typeof b.color === "number") ? b.color : 0x247B69;
-          const needsRebuild = meta && (meta.slot !== b.slot || meta.style !== (b.style || "academy") || meta.color !== accent);
+          const needsRebuild = meta && (meta.slot !== b.slot || meta.style !== (b.style || "academy") || meta.color !== accent || (meta.group && Math.abs(meta.group.rotation.y - (b.facing === "n" ? Math.PI : 0)) > 0.01));
           if (needsRebuild) {
             scene.remove(meta.group);
             disposeObject3D(meta.group, true);
@@ -10287,24 +10340,53 @@ ${errMsg}`);
         if (!container || !thumb) return;
 
         let startX = 0, startY = 0;
-        const maxRadius = 48; // Max thumb travel radius (pixels)
+        let floatingJoy = false;
+        const maxRadius = 52; // v7: jangkauan ibu jari (piksel)
+        const zone = document.getElementById("qbJoyZone");
+        thumb.style.transition = "none";
+        thumb.classList.remove("transition-transform");
 
-        container.addEventListener("pointerdown", (e) => {
+        function placeBase(cx, cy) {
+          const host = container.offsetParent ? container.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
+          const half = container.offsetWidth / 2 || 64;
+          container.style.left = (cx - half - host.left) + "px";
+          container.style.top = (cy - half - host.top) + "px";
+          container.style.bottom = "auto";
+          container.style.right = "auto";
+        }
+        function goHome() {
+          container.style.left = ""; container.style.top = ""; container.style.bottom = ""; container.style.right = "";
+          container.classList.remove("qb-joy-floating");
+        }
+        function beginJoy(e, floating) {
+          if (joystickActive) return;
           joystickActive = true;
           joystickPointerId = e.pointerId;
-          try { container.setPointerCapture(e.pointerId); } catch(err) {}
-
-          const rect = container.getBoundingClientRect();
-          startX = rect.left + rect.width / 2;
-          startY = rect.top + rect.height / 2;
+          floatingJoy = floating;
+          try { (floating ? zone : container).setPointerCapture(e.pointerId); } catch (err) {}
+          if (floating) {
+            const half = container.offsetWidth / 2 || 64;
+            const cx = Math.max(half + 6, Math.min(window.innerWidth - half - 6, e.clientX));
+            const cy = Math.max(half + 6, Math.min(window.innerHeight - half - 6, e.clientY));
+            placeBase(cx, cy);
+            container.classList.add("qb-joy-floating");
+            startX = cx; startY = cy;
+          } else {
+            const rect = container.getBoundingClientRect();
+            startX = rect.left + rect.width / 2;
+            startY = rect.top + rect.height / 2;
+          }
           container.classList.add("border-[#D5A94F]", "shadow-[#D5A94F]/40");
           updateJoystickFromPointer(e);
-        });
-
-        container.addEventListener("pointermove", (e) => {
+        }
+        container.addEventListener("pointerdown", (e) => { e.preventDefault(); beginJoy(e, false); });
+        if (zone) zone.addEventListener("pointerdown", (e) => { e.preventDefault(); beginJoy(e, true); });
+        const onJoyMove = (e) => {
           if (!joystickActive || e.pointerId !== joystickPointerId) return;
           updateJoystickFromPointer(e);
-        });
+        };
+        container.addEventListener("pointermove", onJoyMove);
+        if (zone) zone.addEventListener("pointermove", onJoyMove);
 
         function releaseJoystick(e) {
           if (e.pointerId === joystickPointerId) {
@@ -10314,33 +10396,39 @@ ${errMsg}`);
             joystickVector.y = 0;
             thumb.style.transform = "translate(0px, 0px)";
             container.classList.remove("border-[#D5A94F]", "shadow-[#D5A94F]/40");
+            goHome();
           }
         }
-
-        container.addEventListener("pointerup", releaseJoystick);
-        container.addEventListener("pointercancel", releaseJoystick);
-        container.addEventListener("lostpointercapture", releaseJoystick);
+        [container, zone].forEach(el => {
+          if (!el) return;
+          el.addEventListener("pointerup", releaseJoystick);
+          el.addEventListener("pointercancel", releaseJoystick);
+          el.addEventListener("lostpointercapture", releaseJoystick);
+        });
 
         function updateJoystickFromPointer(e) {
           let dx = e.clientX - startX;
           let dy = e.clientY - startY;
-          const dist = Math.hypot(dx, dy);
-
+          let dist = Math.hypot(dx, dy);
+          // v7: bila jari terlalu jauh, alas joystick ikut bergeser (tidak "macet" di tepi)
+          if (floatingJoy && dist > maxRadius * 1.25) {
+            const pull = dist - maxRadius;
+            startX += (dx / dist) * pull; startY += (dy / dist) * pull;
+            placeBase(startX, startY);
+            dx = e.clientX - startX; dy = e.clientY - startY; dist = Math.hypot(dx, dy);
+          }
           if (dist > maxRadius) {
             dx = (dx / dist) * maxRadius;
             dy = (dy / dist) * maxRadius;
           }
-
           thumb.style.transform = `translate(${dx}px, ${dy}px)`;
-          // v6: zona mati 18% + kurva respons agar gerakan kecil = jalan pelan, tidak "loncat" arah
-          const mag = Math.hypot(dx, dy) / maxRadius;
-          const DEAD = 0.18;
-          if (mag < DEAD) { joystickVector.x = 0; joystickVector.y = 0; }
-          else {
-            const k = Math.pow((mag - DEAD) / (1 - DEAD), 1.3) / mag;
-            joystickVector.x = (dx / maxRadius) * k;
-            joystickVector.y = (dy / maxRadius) * k;
-          }
+          // v7: zona mati kecil (8%), kecepatan penuh sudah di 75% jangkauan, respons linear
+          const mag = Math.min(1, Math.hypot(dx, dy) / maxRadius);
+          const DEAD = 0.08, FULL = 0.75;
+          if (mag < DEAD) { joystickVector.x = 0; joystickVector.y = 0; return; }
+          const k = Math.min(1, (mag - DEAD) / (FULL - DEAD)) / mag;
+          joystickVector.x = (dx / maxRadius) * k;
+          joystickVector.y = (dy / maxRadius) * k;
         }
 
         // Mobile Jump Button
@@ -11170,14 +11258,14 @@ ${errMsg}`);
               if (nearBuilding) {
                 currentNearBuilding = nearBuilding;
                 currentNearNpc = null;
-                promptText.textContent = "Tekan [E] atau Tombol Aksi untuk Masuk";
+                promptText.textContent = document.body.classList.contains("qb-touch") ? "Ketuk AKSI untuk masuk" : "Tekan [E] atau Tombol Aksi untuk Masuk";
                 promptSub.textContent = `${getBuildingDisplayName(nearBuilding)} • ${nearBuilding.chapter}`;
                 prompt.classList.remove("opacity-0", "translate-y-4");
                 prompt.classList.add("opacity-100", "translate-y-0");
               } else if (nearNpc) {
                 currentNearNpc = nearNpc;
                 currentNearBuilding = null;
-                promptText.textContent = "Tekan [E] untuk Bicara";
+                promptText.textContent = document.body.classList.contains("qb-touch") ? "Ketuk AKSI untuk bicara" : "Tekan [E] untuk Bicara";
                 promptSub.textContent = `${nearNpc.name} (${nearNpc.role})`;
                 prompt.classList.remove("opacity-0", "translate-y-4");
                 prompt.classList.add("opacity-100", "translate-y-0");
@@ -11207,8 +11295,36 @@ ${errMsg}`);
         }
       }
 
+      // v7: cek titik bebas tabrakan (untuk menempatkan warga tambahan)
+      function isPointFree(x, z, margin) {
+        const m = (margin === undefined) ? 1.5 : margin;
+        for (const c of worldColliders) {
+          if (!c || c.disabled) continue;
+          if (c.type === "circle") { if (Math.hypot(x - c.x, z - c.z) < c.radius + m) return false; }
+          else if (x > c.minX - m && x < c.maxX + m && z > c.minZ - m && z < c.maxZ + m) return false;
+        }
+        return true;
+      }
+      // v7: hapus & bangun ulang semua warga sesuai NPC_DATA (jumlah warga per paket)
+      function rebuildNpcs() {
+        if (!scene) return 0;
+        npcs3DList.splice(0).forEach(m => {
+          scene.remove(m);
+          try { m.traverse(o => { if (o.isSprite && o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } }); } catch (e) {}
+        });
+        for (let i = worldColliders.length - 1; i >= 0; i--) {
+          if (String(worldColliders[i].name || "").indexOf("NPC ") === 0) worldColliders.splice(i, 1);
+        }
+        currentNearNpc = null;
+        buildInteractiveNpcs();
+        return npcs3DList.length;
+      }
+
       return {
         init,
+        isPointFree,
+        rebuildNpcs,
+        getNpcCount() { return npcs3DList.length; },
         setTouchLookScale(v) { const n = Number(v); if (isFinite(n) && n > 0) touchLookScale = n; return touchLookScale; },
         getTouchLookScale() { return touchLookScale; },
         jumpPlayer(idx) { const p = playersRuntime[idx || 0]; if (p) performPlayerJump(p); return !!p; },
@@ -11442,7 +11558,7 @@ ${errMsg}`);
         const p = data.players[playerIdx] || data.players[0];
         if (!p.questProgress) p.questProgress = {};
 
-        const VALID_NPCS = ["npc_ahmad", "npc_maryam", "npc_mansur", "npc_bilal", "npc_hasan", "npc_amira", "npc_salim"];
+        const VALID_NPCS = { includes: (id) => /^(npc|cz)_[a-z0-9_]+$/i.test(String(id)) }; // v7: warga dinamis
         if (!Array.isArray(p.npcTriviaRewarded)) p.npcTriviaRewarded = [];
         p.npcTriviaRewarded = Array.from(new Set(p.npcTriviaRewarded.filter(id => VALID_NPCS.includes(id))));
 
@@ -11452,9 +11568,11 @@ ${errMsg}`);
         if (!p.questProgress["misi_bantu_warga"]) {
           p.questProgress["misi_bantu_warga"] = { current: 0, completed: false, claimed: false };
         }
-        const count = Math.min(7, p.npcTriviaRewarded.length);
+        const czH = window.__qbCitizenHooks;
+        const czT = czH ? czH.target() : 7;
+        const count = czH ? Math.min(czT, czH.helped(p)) : Math.min(7, p.npcTriviaRewarded.length);
         p.questProgress["misi_bantu_warga"].current = count;
-        if (count >= 7) {
+        if (count >= czT) {
           p.questProgress["misi_bantu_warga"].completed = true;
           if (!wasCompleted && typeof GameAudio !== "undefined" && GameAudio.playLevelUp) {
             GameAudio.playLevelUp();
@@ -11908,7 +12026,7 @@ ${errMsg}`);
         if (!p.inventory) p.inventory = [];
 
         if (p.coins < cost) {
-          alert("Koin emas tidak mencukupi! Selesaikan kuis tajwid untuk mendapatkan lebih banyak koin.");
+          alert("Koin emas tidak mencukupi! Selesaikan kuis dan ujian untuk mendapatkan lebih banyak koin.");
           return;
         }
 
@@ -12709,8 +12827,9 @@ ${errMsg}`);
           if (booksEl) booksEl.textContent = `${(p.booksFound || []).length}/5`;
 
           let rank = "Santri Pemula";
-          if (p.level >= 5) rank = "Master Tajwid";
-          else if (p.level >= 3) rank = "Pakar Tajwid";
+          const subjShort = (GAME_DATA.activePack && GAME_DATA.activePack.subjectName) ? String(GAME_DATA.activePack.subjectName).replace(/^Ilmu\s+/i, "") : "Tajwid";
+          if (p.level >= 5) rank = "Master " + subjShort;
+          else if (p.level >= 3) rank = "Pakar " + subjShort;
           else if (p.level >= 2) rank = "Penuntut Ilmu";
           const rankEl = document.getElementById("hudRankTitle");
           if (rankEl) rankEl.textContent = rank;
@@ -13328,7 +13447,7 @@ Silakan berikan perangkat kepada ${p.name}.`);
             shape.setAttribute("stroke-width", "1.5");
             shape.setAttribute("opacity", "0.92");
             const door = document.createElementNS(NS, "circle");
-            door.setAttribute("cx", "0"); door.setAttribute("cy", "8.5"); door.setAttribute("r", "2.2"); door.setAttribute("fill", "#F3E5AB");
+            door.setAttribute("cx", "0"); door.setAttribute("cy", b.facing === "n" ? "-8.5" : "8.5"); door.setAttribute("r", "2.2"); door.setAttribute("fill", "#F3E5AB");
             const t1 = document.createElementNS(NS, "text");
             t1.setAttribute("y", "-1"); t1.setAttribute("fill", "#ffffff"); t1.setAttribute("font-size", "4"); t1.setAttribute("font-weight", "bold"); t1.setAttribute("text-anchor", "middle");
             t1.textContent = (b.chapter || "").slice(0, 10);
@@ -14295,6 +14414,7 @@ Silakan berikan perangkat kepada ${p.name}.`);
 
       function getEffectiveQuizForNpc(npc) {
         if (!npc) return null;
+        if (window.__qbCitizenHooks) return window.__qbCitizenHooks.quizFor(npc); // v7: per paket / bank soal
         const data = StorageManager.getData();
         if (data.customNpcQuizzes && data.customNpcQuizzes[npc.id]) {
           return data.customNpcQuizzes[npc.id];
@@ -14326,6 +14446,12 @@ Silakan berikan perangkat kepada ${p.name}.`);
           document.getElementById("npcDialogName").textContent = npc.name;
           document.getElementById("npcDialogRole").textContent = npc.role;
           document.getElementById("npcDialogText").textContent = npc.dialogue;
+          try {
+            const dt = document.getElementById("npcDialogText");
+            let hintEl = document.getElementById("npcDialogHint");
+            if (!hintEl && dt && dt.parentNode) { hintEl = document.createElement("p"); hintEl.id = "npcDialogHint"; hintEl.className = "qb-npc-hint"; dt.parentNode.insertBefore(hintEl, dt.nextSibling); }
+            if (hintEl) hintEl.textContent = window.__qbCitizenHooks ? window.__qbCitizenHooks.directionHint(npc, pIdx) : "";
+          } catch (hintErr) {}
 
           const app = npc.appearance || {};
           let roleIcon = (npc.gender === "putri") ? "fa-user-graduate" : "fa-user-tie";
@@ -14735,7 +14861,7 @@ Silakan berikan perangkat kepada ${p.name}.`);
       function getPlayerActiveMission(playerIdx) {
         const data = StorageManager.getData();
         const p = data.players[playerIdx];
-        if (!p) return "Misi Tajwid";
+        if (!p) return "Misi";
 
         const prog = p.questProgress || {};
         for (const q of ContentManager.getQuestList()) {
@@ -15466,7 +15592,7 @@ Silakan berikan perangkat kepada ${p.name}.`);
         if (tabId === 'qbank') TeacherStudioPro.renderQbankTab();
         if (tabId === 'quizcfg') TeacherStudioPro.renderQuizCfgTab();
         if (tabId === 'backup') TeacherStudioPro.renderBackupTab();
-        if (tabId === 'npcquiz') loadNpcQuizEditor(document.getElementById("npcQuizSelectNpc").value);
+        if (tabId === 'npcquiz') { try { loadNpcQuizEditor(document.getElementById("npcQuizSelectNpc").value); } catch (e) {} if (typeof CitizenManager !== 'undefined') CitizenManager.renderTeacher(); }
       }
 
       // Input filter that preserves DOM input focus!
@@ -21221,7 +21347,8 @@ module.exports = QRCode;
       function packSnapshot(pack) {
         const d = StorageManager.getData();
         return { subjectName: pack.subjectName, gradeLabel: pack.gradeLabel, description: pack.description, authorName: pack.authorName || "", authorSchool: pack.authorSchool || "",
-          quizSettings: d.quizSettings, buildings: QBUtil.deepClone(pack.buildings), completion: CompletionEngine.getConfig(pack.id, d) };
+          quizSettings: d.quizSettings, buildings: QBUtil.deepClone(pack.buildings), completion: CompletionEngine.getConfig(pack.id, d),
+          ...(pack.citizens ? { citizens: QBUtil.deepClone(pack.citizens) } : {}) };
       }
       async function publishVersion() {
         const d = StorageManager.getData();
@@ -21817,6 +21944,7 @@ module.exports = QRCode;
           id, subjectName: remote.subjectName || prev.subjectName || "Mata Pelajaran", gradeLabel: remote.gradeLabel || prev.gradeLabel || "",
           description: remote.description || prev.description || "", authorName: remote.authorName || "", authorSchool: remote.authorSchool || "",
           buildings: remote.buildings, completion: remote.completion || prev.completion || null,
+          citizens: remote.citizens || prev.citizens || null,
           version, publishedAt, sheetsLive: { version, publishedAt, installedAt: new Date().toISOString() }
         });
         d.platform.packs[id] = ContentManager.normalizePack(merged, id);
@@ -22598,7 +22726,8 @@ module.exports = QRCode;
         let kkm = 75;
         try { kkm = Number(StorageManager.getData().quizSettings.kkm) || 75; } catch (e) {}
         const touch = (window.matchMedia && matchMedia("(pointer: coarse)").matches) || ("ontouchstart" in window && navigator.maxTouchPoints > 0);
-        return { academy: first, n: list.length || 5, kkm, touch, colors: list.map(b => QBUtil.numToHex(b.color)), names: list.map(b => GameApp.getBuildingDisplayName(b)) };
+        const subj = (GAME_DATA.activePack && GAME_DATA.activePack.subjectName) ? String(GAME_DATA.activePack.subjectName).replace(/^Ilmu\s+/i, "") : "tajwid";
+        return { academy: first, n: list.length || 5, kkm, touch, subj, colors: list.map(b => QBUtil.numToHex(b.color)), names: list.map(b => GameApp.getBuildingDisplayName(b)) };
       }
 
       // ---------- gambar: tokoh ----------
@@ -22752,7 +22881,7 @@ module.exports = QRCode;
               <g transform="translate(680 600)">${ustaz()}<g style="animation: qbi-fadeout .3s ease-in 4.3s forwards"><g style="animation: qbi-bounce .7s ease-in-out infinite alternate"><circle cx="0" cy="-322" r="26" fill="#F5C542" stroke="#101D38" stroke-width="4"/><text x="0" y="-310" text-anchor="middle" font-size="34" font-weight="900" fill="#101D38">!</text></g></g></g>
               ${mover(santri({ walk: walk(2.2), delay: 0.2 }), 80, 460, 2.2, 0.2)}
               ${aksiBtn(330, 470, 2.4, 2)}
-              ${bubble(470, 230, ["Ustaz, di mana aku bisa", "belajar tajwid?"], { delay: 3.0, out: 4.3, fs: 28 })}
+              ${bubble(470, 230, ["Ustaz, di mana aku bisa", "belajar " + (I.subj.length > 13 ? "ilmu ini" : I.subj.toLowerCase()) + "?"], { delay: 3.0, out: 4.3, fs: 28 })}
               ${bubble(700, 170, ["Ke " + I.academy + "!", "Tapi jawab dulu kuisku…"], { side: "right", color: "#fff6dc", delay: 4.5, fs: 26 })}
               <g class="qbi-pop" style="animation: qbi-pop .4s ease-out 6.0s both; transform-origin: 470px 420px">
                 <rect x="370" y="360" width="200" height="56" rx="14" fill="#247B69"/><text x="470" y="397" text-anchor="middle" font-size="24" font-weight="900" fill="#fff">✓ Benar!</text></g>
@@ -23223,12 +23352,813 @@ module.exports = QRCode;
     if (typeof window !== "undefined") window.LandingLite = LandingLite;
 
 
+    /* =======================================================================
+       MODULE 30: WARGA KOTA DINAMIS (v7)
+       - Guru memilih jumlah warga per paket (3–20). Disimpan di pack.citizens
+         sehingga ikut terbit ke siswa lewat "Terbitkan ke Siswa".
+       - 7 warga asli tetap ada (paket Tajwid memakai kuis tajwid bawaan).
+         Warga tambahan (dan semua warga di paket mapel lain) otomatis bertanya
+         dari Bank Soal gedung pada paket aktif — jadi berlaku untuk mapel apa pun.
+       - Guru bisa mengganti nama, peran, sapaan, dan menulis soal sendiri per warga.
+       - Setiap warga memberi petunjuk arah ke gedung terdekat yang belum ditaklukkan.
+       ======================================================================= */
+    const CitizenManager = (() => {
+      const esc = (v) => QBUtil.escapeHtml(v);
+      const MIN = 3, MAX = 20, DEFAULT_COUNT = 12;
+      const ORIGINAL_IDS = ["npc_ahmad", "npc_maryam", "npc_mansur", "npc_bilal", "npc_hasan", "npc_amira", "npc_salim"];
+      let originals = null;   // salinan NPC_DATA bawaan (diambil sekali)
+      let lastSig = "";
+      let ui = { editId: null };
+
+      // ---------- identitas warga tambahan ----------
+      const P = (atasan, bawahan, topi, jilbab, extra) => Object.assign({ atasan, bawahan, rambut: jilbab === "hijab_none" ? "hair_sisir_samping" : "hair_none", warna_rambut: "hcol_hitam", topi_peci: topi, wajah: "face_ceria", jilbab, aksesori: "acc_none", sepatu: "shoe_pantofel", tas: "bag_none" }, extra || {});
+      const EXTRAS = [
+        { id: "cz_fatimah", name: "Bu Fatimah", role: "Penjual Roti Gandum", gender: "putri", skin: 0xfed7aa, plate: "#e11d48", prop: "keranjang_dagang", eq: P("top_gamis_pink", "bot_gamis_labuh", "head_none", "hijab_krem", { wajah: "face_senyum" }) },
+        { id: "cz_umar", name: "Pak Umar", role: "Tukang Kebun Kota", gender: "putra", skin: 0xfba879, plate: "#16a34a", eq: P("top_kaos_petualang", "bot_celana_navy", "head_peci_hitam", "hijab_none", { sepatu: "shoe_boots", wajah: "face_semangat" }) },
+        { id: "cz_zahra", name: "Kak Zahra", role: "Mahasiswi Pencinta Ilmu", gender: "putri", skin: 0xffedd5, plate: "#0891b2", prop: "tumpukan_buku", eq: P("top_gamis_mint", "bot_rok_mint", "head_none", "hijab_mint_bintang", { wajah: "face_kacamata", tas: "bag_ransel" }) },
+        { id: "cz_yusuf", name: "Pak Yusuf", role: "Penjaga Gerbang Kota", gender: "putra", skin: 0xfed7aa, plate: "#ca8a04", prop: "lentera_menara", eq: P("top_jubah_kesatria", "bot_celana_hitam_emas", "head_kopiah_emas", "hijab_none", { sepatu: "shoe_boots", aksesori: "acc_lencana_emas" }) },
+        { id: "cz_khadijah", name: "Bu Khadijah", role: "Penjahit Busana Muslim", gender: "putri", skin: 0xfed7aa, plate: "#7c3aed", eq: P("top_jubah_ungu", "bot_gamis_labuh", "head_none", "hijab_lilac", { aksesori: "acc_pin_bintang" }) },
+        { id: "cz_hamzah", name: "Kak Hamzah", role: "Atlet Panahan Kota", gender: "putra", skin: 0xfba879, plate: "#dc2626", eq: P("top_rompi_kesatria", "bot_sirwal_dark", "head_peci_navy_bintang", "hijab_none", { rambut: "hair_cepak_pelajar", sepatu: "shoe_sneakers", wajah: "face_semangat", aksesori: "acc_selempang" }) },
+        { id: "cz_aisyah", name: "Kak Aisyah", role: "Guru TPA", gender: "putri", skin: 0xffedd5, plate: "#059669", prop: "kitab_guru", eq: P("top_koko_emerald", "bot_rok_putih", "head_none", "hijab_zamrud", { wajah: "face_senyum" }) },
+        { id: "cz_ridwan", name: "Pak Ridwan", role: "Petugas Kebersihan Kota", gender: "putra", skin: 0xfed7aa, plate: "#2563eb", eq: P("top_gamis_navy", "bot_celana_navy", "head_peci_putih", "hijab_none", { rambut: "hair_belah_tengah", sepatu: "shoe_sandal" }) },
+        { id: "cz_sumayyah", name: "Bu Sumayyah", role: "Dokter Kota", gender: "putri", skin: 0xfed7aa, plate: "#0ea5e9", eq: P("top_tunik_ivory", "bot_rok_putih", "head_none", "hijab_khimar", { wajah: "face_kacamata", tas: "bag_slempang" }) },
+        { id: "cz_idris", name: "Pak Idris", role: "Penulis Kaligrafi", gender: "putra", skin: 0xfba879, plate: "#b45309", prop: "tabung_manuskrip", eq: P("top_jubah_amir", "bot_sarung_batik", "head_sorban_arab", "hijab_none", { rambut: "hair_none", warna_rambut: "hcol_abu", aksesori: "acc_tasbih", sepatu: "shoe_sandal" }) },
+        { id: "cz_nadia", name: "Kak Nadia", role: "Juru Foto Kota", gender: "putri", skin: 0xfba879, plate: "#db2777", eq: P("top_gamis_pink", "bot_rok_syari", "head_none", "hijab_pink_bunga", { tas: "bag_tas_bunga", sepatu: "shoe_putri_pink" }) },
+        { id: "cz_faruq", name: "Pak Faruq", role: "Penjual Kurma", gender: "putra", skin: 0xfed7aa, plate: "#a16207", prop: "keranjang_dagang", eq: P("top_tunik_ivory", "bot_sirwal_sand", "head_peci_hijau_bulan", "hijab_none", { rambut: "hair_ikal_keren", warna_rambut: "hcol_cokelat" }) },
+        { id: "cz_halimah", name: "Nenek Halimah", role: "Pendongeng Kota", gender: "putri", skin: 0xfed7aa, plate: "#9333ea", prop: "tongkat_ulama", eq: P("top_jubah_ungu", "bot_gamis_labuh", "head_none", "hijab_ratu", { wajah: "face_senyum", aksesori: "acc_tasbih" }) }
+      ];
+      // Posisi baru dua warga asli (pintu gedung 3 & 4 kini menghadap alun-alun)
+      const MOVED = { npc_mansur: { posX: -40, posZ: 9, rotationY: 1.8 }, npc_bilal: { posX: 40, posZ: 9, rotationY: -1.8 } };
+
+      function snapshotOriginals() {
+        if (originals) return originals;
+        originals = (typeof NPC_DATA !== "undefined" ? NPC_DATA : []).map(n => {
+          const c = QBUtil.deepClone(n);
+          if (MOVED[c.id]) { c.posX = MOVED[c.id].posX; c.posZ = MOVED[c.id].posZ; c.appearance = Object.assign({}, c.appearance, { rotationY: MOVED[c.id].rotationY }); }
+          return c;
+        });
+        return originals;
+      }
+
+      // ---------- konfigurasi per paket ----------
+      function activePackRec(d) {
+        const data = d || StorageManager.getData();
+        return data.platform && data.platform.packs ? data.platform.packs[data.platform.activePackId] : null;
+      }
+      function isDefaultPack(pack) { return !!pack && pack.id === ContentManager.DEFAULT_PACK_ID; }
+      function getConfig(pack) {
+        const c = (pack && pack.citizens && typeof pack.citizens === "object") ? pack.citizens : {};
+        const count = Math.max(MIN, Math.min(MAX, parseInt(c.count, 10) || DEFAULT_COUNT));
+        return { count, overrides: (c.overrides && typeof c.overrides === "object") ? c.overrides : {} };
+      }
+      function roster() { return snapshotOriginals().map(o => ({ kind: "original", base: o })).concat(EXTRAS.map(x => ({ kind: "extra", base: x }))); }
+
+      // ---------- bank soal → kuis warga ----------
+      function questionPool(buildingId) {
+        const list = ContentManager.listBuildings().filter(b => ContentManager.isBuildingActive(b));
+        const src = (buildingId && buildingId !== "all") ? list.filter(b => b.id === buildingId) : list;
+        const pool = [];
+        src.forEach(b => (b.questions || []).forEach(q => {
+          if (!q || !q.q || !Array.isArray(q.opts) || q.opts.length < 2) return;
+          const idx = q.opts.findIndex(o => (o && (o.key || "")) === q.ans);
+          if (idx < 0) return;
+          pool.push({ q, b });
+        }));
+        return pool;
+      }
+      function toNpcQuiz(item) {
+        const q = item.q;
+        return {
+          q: q.q, qArabic: q.arabic || "",
+          opts: q.opts.map(o => ({ text: String(o.text || ""), arabic: String(o.arabic || "") })),
+          ansIdx: q.opts.findIndex(o => o.key === q.ans),
+          exp: q.exp || "", fromBank: true, buildingId: item.b.id
+        };
+      }
+      function hashStr(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
+
+      function quizFor(npc) {
+        if (!npc) return null;
+        const pack = activePackRec();
+        const cfg = getConfig(pack);
+        const ov = cfg.overrides[npc.id] || {};
+        if (ov.source === "custom" && ov.quiz && ov.quiz.q && Array.isArray(ov.quiz.opts)) {
+          return { q: ov.quiz.q, qArabic: "", opts: ov.quiz.opts.map(t => ({ text: String(t || ""), arabic: "" })), ansIdx: Math.max(0, Math.min(ov.quiz.opts.length - 1, Number(ov.quiz.ansIdx) || 0)), exp: ov.quiz.exp || "" };
+        }
+        const isOrig = ORIGINAL_IDS.includes(npc.id);
+        if (isDefaultPack(pack) && isOrig && ov.source !== "auto") {
+          const data = StorageManager.getData();
+          if (data.customNpcQuizzes && data.customNpcQuizzes[npc.id]) return data.customNpcQuizzes[npc.id];
+          const o = snapshotOriginals().find(x => x.id === npc.id);
+          if (o && o.quiz) return o.quiz;
+        }
+        const pool = questionPool(ov.buildingId || "all");
+        if (!pool.length) return null;
+        const order = roster().findIndex(r => r.base.id === npc.id);
+        const pick = pool[((order >= 0 ? order * 7 : 0) + hashStr(npc.id)) % pool.length];
+        return toNpcQuiz(pick);
+      }
+
+      // ---------- petunjuk arah (utara = ke arah Masjid Agung) ----------
+      function compass(dx, dz) {
+        const a = Math.atan2(dx, -dz) * 180 / Math.PI; // 0 = utara, 90 = timur
+        const names = ["utara", "timur laut", "timur", "tenggara", "selatan", "barat daya", "barat", "barat laut"];
+        return names[Math.round(((a + 360) % 360) / 45) % 8];
+      }
+      // gedung "tertaklukkan" = Ujian Tantangan sudah lulus (sama dengan hitungan Grand Finale)
+      function passedSet(playerIdx) {
+        try {
+          const prog = CompletionEngine.computeProgress(playerIdx || 0);
+          return new Set((prog.buildings || []).filter(r => r.examPassed).map(r => r.id));
+        } catch (e) {
+          const d = StorageManager.getData();
+          return new Set([].concat((d.players[playerIdx || 0] || {}).challengeRewardedBuildings || []));
+        }
+      }
+      function nextTargets(playerIdx) {
+        const done = passedSet(playerIdx);
+        return ContentManager.listBuildings().filter(b => ContentManager.isBuildingActive(b) && !done.has(b.id));
+      }
+      function directionHint(npc, playerIdx) {
+        try {
+          const left = nextTargets(playerIdx);
+          if (!left.length) return "Semua gedung sudah kamu taklukkan. Buka Grand Finale dari menu, ya!";
+          let best = null, bd = Infinity;
+          left.forEach(b => { const dd = Math.hypot(b.doorX - npc.posX, b.doorZ - npc.posZ); if (dd < bd) { bd = dd; best = b; } });
+          return `Petunjuk: ${GameApp.getBuildingDisplayName(best)} ada di sebelah ${compass(best.doorX - npc.posX, best.doorZ - npc.posZ)} dari sini (±${Math.round(bd)} m). Ikuti panah emas di layar!`;
+        } catch (e) { return ""; }
+      }
+
+      // ---------- membangun daftar warga aktif ----------
+      function genericDialogue(base, pack) {
+        const subj = (pack && pack.subjectName) || "pelajaran";
+        return `Assalamu'alaikum! Aku ${base.name}, ${base.role.toLowerCase()}. Aku punya satu pertanyaan ${subj} untukmu. Kalau benar, kamu dapat koin!`;
+      }
+      function placementSpots(fixed, needed) {
+        // kandidat tetap (deterministik): tepi jalan utama, cincin alun-alun, depan pintu gedung
+        const cand = [];
+        for (let t = -80; t <= 80; t += 8) { cand.push([7.5, t], [-7.5, t], [t, 7.5], [t, -7.5]); }
+        for (let a = 0; a < 360; a += 24) { const r = a * Math.PI / 180; cand.push([Math.round(Math.sin(r) * 28), Math.round(Math.cos(r) * 28)]); }
+        ContentManager.listBuildings().forEach(b => {
+          const dir = (b.doorZ < b.posZ) ? -1 : 1;
+          cand.push([b.doorX + 7, b.doorZ + dir * 6], [b.doorX - 7, b.doorZ + dir * 6]);
+        });
+        const doors = ContentManager.listBuildings().map(b => [b.doorX, b.doorZ]);
+        const books = [[14, 12], [-32, -22], [12, 36], [-55, 42], [32, -14]];
+        const ok = (x, z, placed) => {
+          if (Math.abs(x) > 84 || Math.abs(z) > 84) return false;
+          if (doors.some(dd => Math.hypot(x - dd[0], z - dd[1]) < 6.5)) return false;
+          if (books.some(bk => Math.hypot(x - bk[0], z - bk[1]) < 4)) return false;
+          if (placed.some(pp => Math.hypot(x - pp[0], z - pp[1]) < 7)) return false;
+          try { if (World3D.isPointFree && !World3D.isPointFree(x, z, 2.2)) return false; } catch (e) {}
+          return true;
+        };
+        const placed = fixed.slice();
+        const out = [];
+        const free = cand.filter(c => ok(c[0], c[1], []));
+        while (out.length < needed) {
+          let best = null, bestD = -1;
+          free.forEach(c => {
+            if (!ok(c[0], c[1], placed)) return;
+            const dmin = placed.length ? Math.min(...placed.map(pp => Math.hypot(c[0] - pp[0], c[1] - pp[1]))) : 999;
+            const centerBias = -Math.hypot(c[0], c[1]) * 0.08; // sedikit lebih suka dekat pusat kota
+            const score = Math.min(dmin, 40) + centerBias;
+            if (score > bestD) { bestD = score; best = c; }
+          });
+          if (!best) break;
+          placed.push(best); out.push(best);
+        }
+        return out;
+      }
+      function buildList() {
+        const pack = activePackRec();
+        const cfg = getConfig(pack);
+        const def = isDefaultPack(pack);
+        const ros = roster().slice(0, cfg.count);
+        const fixed = ros.filter(r => r.kind === "original").map(r => [r.base.posX, r.base.posZ]);
+        const extrasNeeded = ros.filter(r => r.kind === "extra").length;
+        const spots = placementSpots(fixed, extrasNeeded);
+        let si = 0;
+        return ros.map(r => {
+          const ov = cfg.overrides[r.base.id] || {};
+          if (r.kind === "original") {
+            const n = QBUtil.deepClone(r.base);
+            if (!def) { n.dialogue = genericDialogue(n, pack); n.role = n.role.replace(/Ilmu Tajwid/gi, "Ilmu").replace(/Tajwid|Gharib|Waqaf/gi, "Ilmu"); }
+            if (ov.name) n.name = String(ov.name).slice(0, 40);
+            if (ov.role) n.role = String(ov.role).slice(0, 60);
+            if (ov.dialogue) n.dialogue = String(ov.dialogue).slice(0, 400);
+            return n;
+          }
+          const s = spots[si++] || [0, 30 + si * 6];
+          const x = r.base;
+          return {
+            id: x.id, name: String(ov.name || x.name).slice(0, 40), role: String(ov.role || x.role).slice(0, 60),
+            posX: s[0], posZ: s[1], gender: x.gender, avatar: x.id,
+            appearance: { gender: x.gender, skinColor: x.skin, visualScale: 1.04, rotationY: Math.atan2(-s[0], -s[1]), nameplateColor: x.plate, roleProp: x.prop || null, equipped: x.eq },
+            dialogue: String(ov.dialogue || genericDialogue(x, pack)).slice(0, 400),
+            quiz: null, generated: true
+          };
+        });
+      }
+
+      // ---------- terapkan ke dunia 3D ----------
+      function apply(force) {
+        if (typeof NPC_DATA === "undefined") return 0;
+        snapshotOriginals();
+        const list = buildList();
+        const sig = JSON.stringify(list.map(n => [n.id, n.name, n.role, n.posX, n.posZ, n.dialogue]));
+        if (!force && sig === lastSig) return list.length;
+        lastSig = sig;
+        NPC_DATA.length = 0;
+        list.forEach(n => NPC_DATA.push(n));
+        try { if (World3D.rebuildNpcs && World3D.isReady && World3D.isReady()) World3D.rebuildNpcs(); } catch (e) { console.warn("rebuildNpcs", e); }
+        try { if (typeof QuestEngine !== "undefined" && QuestEngine.updateHudActiveMission) QuestEngine.updateHudActiveMission(); } catch (e) {}
+        try { if (typeof QBNavigator !== "undefined") QBNavigator.renderMapNpcs(); } catch (e) {}
+        return list.length;
+      }
+      function target() { return Math.max(1, NPC_DATA.length || 7); }
+      function helped(p) {
+        const ids = new Set(NPC_DATA.map(n => n.id));
+        return (p.npcTriviaRewarded || []).filter(id => ids.has(id)).length;
+      }
+      function adjustSideQuests(side, isDefault) {
+        const n = target();
+        const bw = side.find(q => q.id === "misi_bantu_warga");
+        if (bw) { bw.target = n; bw.title = `Bantu ${n} Warga Kota`; bw.desc = `Temui ${n} warga kota (tanda !), jawab pertanyaan mereka, dan bantu semuanya.`; }
+        if (!isDefault) {
+          const bk = side.find(q => q.id === "misi_buku");
+          if (bk) { bk.title = "Kolektor Kitab Ilmu"; bk.desc = "Temukan 5 kitab ilmu yang tersebar di sudut-sudut jalanan kota Qurablox."; }
+          const ah = side.find(q => q.id === "misi_npc_ahmad");
+          if (ah) { ah.desc = "Sapa Ustaz Ahmad di dekat gedung pertama dan jawab pertanyaannya."; }
+        }
+        const ah2 = side.find(q => q.id === "misi_npc_ahmad");
+        if (ah2 && !NPC_DATA.some(x => x.id === "npc_ahmad")) side.splice(side.indexOf(ah2), 1);
+      }
+
+      // ---------- Panel Guru: tab "Warga Kota" ----------
+      function saveConfig(mut) {
+        const d = StorageManager.getData();
+        const pack = d.platform.packs[d.platform.activePackId];
+        const cfg = getConfig(pack);
+        const next = { count: cfg.count, overrides: QBUtil.deepClone(cfg.overrides) };
+        mut(next);
+        pack.citizens = next;
+        pack.updatedAt = Date.now();
+        StorageManager.setData(d);
+        apply(true);
+        try { if (typeof PackSync !== "undefined") PackSync.refreshBadge(); } catch (e) {}
+      }
+      function toast(msg, kind) {
+        try { if (typeof TeacherStudioPro !== "undefined" && TeacherStudioPro.toast) return TeacherStudioPro.toast(msg, kind); } catch (e) {}
+        try { PlatformBoot.systemToast(`<b>${esc(msg)}</b>`, 4000); } catch (e) {}
+      }
+      function setCount(v) {
+        const n = Math.max(MIN, Math.min(MAX, parseInt(v, 10) || DEFAULT_COUNT));
+        saveConfig(c => { c.count = n; });
+        renderTeacher();
+        toast(`Jumlah warga diatur menjadi ${n}. Misi "Bantu Warga" menyesuaikan.`, "ok");
+      }
+      function sourceLabel(n, pack, ov) {
+        if (ov.source === "custom") return '<span class="ts-badge" style="background:#7c3aed33;color:#c4b5fd">Soal khusus guru</span>';
+        if (isDefaultPack(pack) && ORIGINAL_IDS.includes(n.id) && ov.source !== "auto") return '<span class="ts-badge">Kuis bawaan</span>';
+        const b = ov.buildingId && ov.buildingId !== "all" ? ContentManager.listBuildings().find(x => x.id === ov.buildingId) : null;
+        return `<span class="ts-badge" style="background:#247B6933;color:#6ee7b7">Otomatis • ${b ? esc(GameApp.getBuildingDisplayName(b)) : "semua gedung"}</span>`;
+      }
+      function renderTeacher() {
+        const host = document.getElementById("tsCitizensHost");
+        if (!host) return;
+        apply();
+        const pack = activePackRec();
+        const cfg = getConfig(pack);
+        const list = NPC_DATA.slice();
+        const buildings = ContentManager.listBuildings();
+        const ed = ui.editId ? list.find(n => n.id === ui.editId) : null;
+        const ov = ed ? (cfg.overrides[ed.id] || {}) : {};
+        const curQuiz = ed ? quizFor(ed) : null;
+        host.innerHTML = `
+          <div class="ts-card space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h4 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-users text-[#D5A94F]"></i> Warga Kota — ${esc(pack ? pack.subjectName : "")}</h4>
+                <p class="text-[11px] text-[#D9BE96]">Pengaturan ini milik <b>paket aktif</b> dan ikut terkirim saat <b>Terbitkan ke Siswa</b>.</p>
+              </div>
+              <span class="ts-badge"><i class="fa-solid fa-person"></i> ${cfg.count} warga</span>
+            </div>
+            <div>
+              <label class="ts-label" for="tsCzCount">Jumlah warga yang tampil di kota (${MIN}–${MAX})</label>
+              <div class="flex flex-wrap items-center gap-3">
+                <input id="tsCzCount" type="range" min="${MIN}" max="${MAX}" value="${cfg.count}" class="flex-1 min-w-[180px] accent-[#D5A94F]" oninput="document.getElementById('tsCzCountVal').textContent = this.value">
+                <b id="tsCzCountVal" class="text-[#F5C542] text-lg w-8 text-center">${cfg.count}</b>
+                <button type="button" class="ts-btn gold" onclick="CitizenManager.setCount(document.getElementById('tsCzCount').value)"><i class="fa-solid fa-check"></i> Terapkan</button>
+              </div>
+              <p class="text-[10px] text-[#D9BE96]/80 mt-1">Setiap warga memberi satu kuis berhadiah koin dan petunjuk arah ke gedung. Untuk HP lama, disarankan paling banyak 12 warga.</p>
+            </div>
+            <div class="p-2.5 rounded-xl bg-[#247B69]/15 border border-[#247B69]/40 text-[11px] text-[#EDE3D0]"><i class="fa-solid fa-wand-magic-sparkles text-[#6ee7b7]"></i> Warga yang tidak diberi soal khusus akan <b>otomatis bertanya dari Bank Soal</b> gedung pada paket ini — cocok untuk mapel apa pun.</div>
+          </div>
+
+          <div class="ts-card">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-[11px]">
+                <thead><tr class="text-[#D9BE96] border-b border-[#203858]"><th class="p-2">#</th><th class="p-2">Warga</th><th class="p-2">Pertanyaan</th><th class="p-2 text-right">Aksi</th></tr></thead>
+                <tbody>
+                  ${list.map((n, i) => `<tr class="border-b border-[#203858]/60" data-cz-row="${esc(n.id)}">
+                    <td class="p-2 font-mono text-[#D5A94F]">${i + 1}</td>
+                    <td class="p-2"><p class="font-bold text-white">${esc(n.name)}</p><p class="text-[10px] text-[#D9BE96]">${esc(n.role)}</p></td>
+                    <td class="p-2">${sourceLabel(n, pack, cfg.overrides[n.id] || {})}</td>
+                    <td class="p-2 text-right"><button type="button" class="ts-btn" onclick="CitizenManager.edit('${esc(n.id)}')"><i class="fa-solid fa-pen"></i> Ubah</button></td>
+                  </tr>`).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          ${ed ? `
+          <div class="ts-card space-y-3" id="tsCzEditor" style="border-color:rgba(245,197,66,.6)">
+            <div class="flex items-center justify-between gap-2"><h4 class="font-bold text-white text-sm"><i class="fa-solid fa-user-pen text-[#D5A94F]"></i> Ubah warga: ${esc(ed.name)}</h4><button type="button" class="ts-btn" onclick="CitizenManager.edit(null)">Tutup</button></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div><label class="ts-label" for="tsCzName">Nama</label><input id="tsCzName" class="ts-input" maxlength="40" value="${esc(ov.name || ed.name)}"></div>
+              <div><label class="ts-label" for="tsCzRole">Peran</label><input id="tsCzRole" class="ts-input" maxlength="60" value="${esc(ov.role || ed.role)}"></div>
+            </div>
+            <div><label class="ts-label" for="tsCzDialog">Kalimat sapaan</label><textarea id="tsCzDialog" class="ts-input" rows="2" maxlength="400">${esc(ov.dialogue || ed.dialogue || "")}</textarea></div>
+            <div>
+              <label class="ts-label">Sumber pertanyaan</label>
+              <div class="flex flex-wrap gap-3 text-[11px] text-[#EDE3D0]">
+                ${isDefaultPack(pack) && ORIGINAL_IDS.includes(ed.id) ? `<label class="flex items-center gap-1.5"><input type="radio" name="tsCzSrc" value="builtin" ${!ov.source || ov.source === "builtin" ? "checked" : ""} onchange="CitizenManager.onSrc(this.value)"> Kuis bawaan</label>` : ""}
+                <label class="flex items-center gap-1.5"><input type="radio" name="tsCzSrc" value="auto" ${ov.source === "auto" || (!ov.source && !(isDefaultPack(pack) && ORIGINAL_IDS.includes(ed.id))) ? "checked" : ""} onchange="CitizenManager.onSrc(this.value)"> Otomatis dari Bank Soal</label>
+                <label class="flex items-center gap-1.5"><input type="radio" name="tsCzSrc" value="custom" ${ov.source === "custom" ? "checked" : ""} onchange="CitizenManager.onSrc(this.value)"> Tulis soal sendiri</label>
+              </div>
+            </div>
+            <div id="tsCzAuto" class="${ov.source === "custom" ? "hidden" : ""}">
+              <label class="ts-label" for="tsCzBuilding">Ambil soal dari gedung</label>
+              <select id="tsCzBuilding" class="ts-input"><option value="all">Semua gedung (acak tetap)</option>${buildings.map(b => `<option value="${esc(b.id)}" ${ov.buildingId === b.id ? "selected" : ""}>${esc(GameApp.getBuildingDisplayName(b))} (${esc(b.chapter || "")})</option>`).join("")}</select>
+            </div>
+            <div id="tsCzCustom" class="space-y-2 ${ov.source === "custom" ? "" : "hidden"}">
+              <div><label class="ts-label" for="tsCzQ">Pertanyaan</label><input id="tsCzQ" class="ts-input" maxlength="300" value="${esc(ov.quiz ? ov.quiz.q : "")}"></div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                ${[0, 1, 2, 3].map(k => `<div><label class="ts-label" for="tsCzO${k}">Pilihan ${String.fromCharCode(65 + k)}</label><input id="tsCzO${k}" class="ts-input" maxlength="160" value="${esc(ov.quiz && ov.quiz.opts ? (ov.quiz.opts[k] || "") : "")}"></div>`).join("")}
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div><label class="ts-label" for="tsCzAns">Kunci jawaban</label><select id="tsCzAns" class="ts-input">${[0, 1, 2, 3].map(k => `<option value="${k}" ${ov.quiz && Number(ov.quiz.ansIdx) === k ? "selected" : ""}>${String.fromCharCode(65 + k)}</option>`).join("")}</select></div>
+                <div class="sm:col-span-2"><label class="ts-label" for="tsCzExp">Pembahasan</label><input id="tsCzExp" class="ts-input" maxlength="300" value="${esc(ov.quiz ? ov.quiz.exp || "" : "")}"></div>
+              </div>
+            </div>
+            ${curQuiz ? `<div class="p-2.5 rounded-xl bg-[#101D38] border border-[#203858] text-[11px]"><p class="text-[#D9BE96] font-bold mb-1">Pertanyaan yang tampil sekarang:</p><p class="text-white">${esc(curQuiz.q)}</p><p class="text-[#6ee7b7] mt-1">Kunci: ${esc((curQuiz.opts[curQuiz.ansIdx] || {}).text || curQuiz.opts[curQuiz.ansIdx] || "-")}</p></div>` : `<p class="text-[11px] text-[#fca5a5]">Belum ada soal di Bank Soal paket ini — isi Bank Soal atau tulis soal sendiri.</p>`}
+            <div class="ts-row">
+              <button type="button" class="ts-btn gold" onclick="CitizenManager.saveEdit()"><i class="fa-solid fa-floppy-disk"></i> Simpan Warga</button>
+              <button type="button" class="ts-btn" onclick="CitizenManager.resetOne()"><i class="fa-solid fa-rotate-left"></i> Kembalikan ke bawaan</button>
+            </div>
+          </div>` : ""}`;
+      }
+      function edit(id) { ui.editId = id; renderTeacher(); const e = document.getElementById("tsCzEditor"); if (e) try { e.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (err) {} }
+      function onSrc(v) {
+        const a = document.getElementById("tsCzAuto"), c = document.getElementById("tsCzCustom");
+        if (a) a.classList.toggle("hidden", v === "custom" || v === "builtin");
+        if (c) c.classList.toggle("hidden", v !== "custom");
+      }
+      function saveEdit() {
+        const id = ui.editId; if (!id) return null;
+        const val = (k) => { const el = document.getElementById(k); return el ? el.value.trim() : ""; };
+        const src = (document.querySelector('input[name="tsCzSrc"]:checked') || {}).value || "auto";
+        const base = NPC_DATA.find(n => n.id === id) || {};
+        const o = {};
+        if (val("tsCzName") && val("tsCzName") !== base.name) o.name = val("tsCzName");
+        if (val("tsCzRole") && val("tsCzRole") !== base.role) o.role = val("tsCzRole");
+        if (val("tsCzDialog") && val("tsCzDialog") !== base.dialogue) o.dialogue = val("tsCzDialog");
+        o.source = src;
+        if (src === "auto") o.buildingId = val("tsCzBuilding") || "all";
+        if (src === "custom") {
+          const opts = [0, 1, 2, 3].map(k => val("tsCzO" + k));
+          const filled = opts.filter(Boolean);
+          const ans = Number(val("tsCzAns")) || 0;
+          if (!val("tsCzQ") || filled.length < 2 || !opts[ans]) { toast("Isi pertanyaan, minimal 2 pilihan, dan pastikan pilihan kunci tidak kosong.", "err"); return null; }
+          const compact = []; let newAns = 0;
+          opts.forEach((t, k) => { if (t) { if (k === ans) newAns = compact.length; compact.push(t); } });
+          o.quiz = { q: val("tsCzQ"), opts: compact, ansIdx: newAns, exp: val("tsCzExp") };
+        }
+        saveConfig(c => { c.overrides[id] = o; });
+        renderTeacher();
+        toast("Warga disimpan.", "ok");
+        return o;
+      }
+      function resetOne() {
+        const id = ui.editId; if (!id) return;
+        saveConfig(c => { delete c.overrides[id]; });
+        renderTeacher();
+        toast("Warga dikembalikan ke bawaan.", "ok");
+      }
+
+      function init() {
+        snapshotOriginals();
+        window.__qbCitizenHooks = { quizFor, helped, target, adjustSideQuests, directionHint };
+        apply(true);
+        // ikut berubah saat paket diganti / diterbitkan / diedit guru
+        try {
+          const orig = GameApp.refreshContentEverywhere;
+          GameApp.refreshContentEverywhere = function () { const r = orig.apply(this, arguments); try { apply(); } catch (e) {} return r; };
+        } catch (e) {}
+      }
+      return { init, apply, quizFor, directionHint, compass, target, helped, getConfig: () => getConfig(activePackRec()), renderTeacher, setCount, edit, onSrc, saveEdit, resetOne, nextTargets, passedSet, MIN, MAX, DEFAULT_COUNT, EXTRAS, ORIGINAL_IDS };
+    })();
+    if (typeof window !== "undefined") window.CitizenManager = CitizenManager;
+
+    /* =======================================================================
+       MODULE 31: PENUNJUK ARAH & MINIMAP (v7)
+       Supaya murid mudah menemukan gedung:
+       - Minimap bulat di pojok kiri atas yang MENGIKUTI pemain dan BERPUTAR
+         searah kamera (atas minimap = arah dorong joystick ke atas).
+       - Panah emas + nama tujuan + jarak (meter). Ketuk untuk memilih tujuan.
+       - Tujuan otomatis: gedung berikutnya yang belum ditaklukkan (urut bab).
+       - Pilar cahaya + panah melayang di pintu gedung tujuan (terlihat dari jauh).
+       - Peta besar: warga ditampilkan sesuai jumlah warga paket, ketuk gedung
+         untuk menjadikannya tujuan.
+       Hanya untuk mode Solo (layar Co-op terlalu kecil untuk minimap).
+       ======================================================================= */
+    const QBNavigator = (() => {
+      const esc = (v) => QBUtil.escapeHtml(v);
+      let raf = null, lastDraw = 0, beacon = null, built = false, lastTargetKey = "", arrived = false;
+      let state = { mode: "auto", target: null };   // target: { kind: "building"|"npc", id }
+
+      function loadState() {
+        try { const v = JSON.parse(sessionStorage.getItem("qb_nav") || "null"); if (v && v.mode) state = v; } catch (e) {}
+      }
+      function saveState() { try { sessionStorage.setItem("qb_nav", JSON.stringify(state)); } catch (e) {} }
+
+      function soloActive() {
+        const hud = document.getElementById("gameHudContainer");
+        if (!hud || hud.classList.contains("hidden")) return false;
+        try { if (StorageManager.peekData().gameMode === "coop") return false; } catch (e) {}
+        return true;
+      }
+      function player() {
+        try { return World3D.getPlayersRuntime()[0] || null; } catch (e) { return null; }
+      }
+      function yaw() {
+        const p = player();
+        return (p && p.cameraState) ? p.cameraState.yaw : 0;
+      }
+      function activeIdx() { try { const d = StorageManager.peekData(); return d.activePlayerIndex || 0; } catch (e) { return 0; } }
+
+      // ---------- tujuan ----------
+      function autoTarget() {
+        const left = CitizenManager.nextTargets(activeIdx());
+        return left.length ? { kind: "building", id: left[0].id } : null;
+      }
+      function resolve(t) {
+        if (!t) return null;
+        if (t.kind === "building") {
+          const b = ContentManager.listBuildings().find(x => x.id === t.id && ContentManager.isBuildingActive(x));
+          if (!b) return null;
+          return { kind: "building", id: b.id, name: GameApp.getBuildingDisplayName(b), x: b.doorX, z: b.doorZ, color: QBUtil.numToHex(b.color), b };
+        }
+        if (t.kind === "npc") {
+          const n = NPC_DATA.find(x => x.id === t.id);
+          if (!n) return null;
+          return { kind: "npc", id: n.id, name: n.name, x: n.posX, z: n.posZ, color: (n.appearance && n.appearance.nameplateColor) || "#F5C542" };
+        }
+        return null;
+      }
+      function current() {
+        if (state.mode === "off") return null;
+        if (state.mode === "auto") return resolve(autoTarget());
+        const r = resolve(state.target);
+        if (r && r.kind === "building" && CitizenManager.passedSet(activeIdx()).has(r.id)) { state = { mode: "auto", target: null }; saveState(); return resolve(autoTarget()); }
+        return r || resolve(autoTarget());
+      }
+      function setTarget(kind, id) {
+        if (kind === "auto") state = { mode: "auto", target: null };
+        else if (kind === "off") state = { mode: "off", target: null };
+        else state = { mode: "manual", target: { kind, id } };
+        saveState();
+        closePicker();
+        tick(true);
+        try { GameAudio.playClick(); } catch (e) {}
+      }
+      function nearestUnhelpedNpc() {
+        const p = player(); if (!p) return null;
+        const d = StorageManager.peekData();
+        const pl = d.players[activeIdx()] || {};
+        const helped = new Set(pl.npcTriviaRewarded || []);
+        let best = null, bd = Infinity;
+        NPC_DATA.forEach(n => { if (helped.has(n.id)) return; const dd = Math.hypot(n.posX - p.position.x, n.posZ - p.position.z); if (dd < bd) { bd = dd; best = n; } });
+        return best;
+      }
+
+      // ---------- geometri (atas = arah depan kamera) ----------
+      function rel(dx, dz) {
+        const y = yaw();
+        const f = dx * Math.sin(y) + dz * Math.cos(y);      // komponen ke depan
+        const r = dx * -Math.cos(y) + dz * Math.sin(y);     // komponen ke kanan
+        return { f, r };
+      }
+
+      // ---------- DOM ----------
+      function build() {
+        if (built) return;
+        const hud = document.getElementById("gameHudContainer");
+        if (!hud) return;
+        const wrap = document.createElement("div");
+        wrap.id = "qbNav";
+        wrap.innerHTML = `
+          <button type="button" id="qbMiniMap" class="qb-minimap" aria-label="Minimap — ketuk untuk membuka peta besar" onclick="GameApp.openCityMap()">
+            <canvas id="qbMiniCanvas" width="240" height="240"></canvas>
+            <span class="qb-mm-up" aria-hidden="true">▲</span>
+          </button>
+          <button type="button" id="qbGuide" class="qb-guide" onclick="QBNavigator.openPicker()" aria-live="polite">
+            <span class="qb-guide-arrow" id="qbGuideArrow"><svg viewBox="0 0 40 40" width="100%" height="100%"><path d="M20 3 L34 33 L20 25 L6 33 Z" fill="#F5C542" stroke="#101D38" stroke-width="2.5" stroke-linejoin="round"/></svg></span>
+            <span class="qb-guide-txt"><b id="qbGuideName">Tujuan</b><small id="qbGuideDist"></small></span>
+          </button>
+`;
+        hud.appendChild(wrap);
+        const picker = document.createElement("div");
+        picker.id = "qbNavPicker"; picker.className = "qb-nav-picker hidden";
+        picker.setAttribute("role", "dialog"); picker.setAttribute("aria-label", "Pilih tujuan");
+        document.body.appendChild(picker);
+        built = true;
+        layout();
+        window.addEventListener("resize", layout);
+      }
+      function layout() {
+        const mm = document.getElementById("qbMiniMap"), g = document.getElementById("qbGuide");
+        if (!mm || !g) return;
+        const card = document.getElementById("hudXpFill") ? document.getElementById("hudXpFill").closest(".qb-hud-card, .glass-navy, div[class*='rounded']") : null;
+        const small = Math.min(window.innerWidth, window.innerHeight) < 520;
+        const size = small ? 104 : 150;
+        let top = small ? 96 : 140, left = small ? 12 : 24;
+        if (card) {
+          let el = card; for (let k = 0; k < 3 && el && el.getBoundingClientRect().height < 50; k++) el = el.parentElement;
+          const r = (el || card).getBoundingClientRect();
+          if (r.height > 30 && r.bottom < window.innerHeight * 0.5) { top = Math.round(r.bottom + 8); left = Math.max(8, Math.round(r.left)); }
+        }
+        mm.style.width = mm.style.height = size + "px";
+        mm.style.top = top + "px"; mm.style.left = left + "px";
+        g.style.top = top + "px"; g.style.left = (left + size + 8) + "px";
+        g.style.maxWidth = Math.max(140, window.innerWidth - (left + size + 16)) + "px";
+      }
+
+      function drawMini(t) {
+        const cv = document.getElementById("qbMiniCanvas");
+        const p = player();
+        if (!cv || !p) return;
+        const ctx = cv.getContext("2d");
+        const W = cv.width, R = W / 2, range = 70;           // radius minimap = 70 m
+        const k = (R - 8) / range;
+        ctx.clearRect(0, 0, W, W);
+        ctx.save();
+        ctx.beginPath(); ctx.arc(R, R, R - 2, 0, Math.PI * 2); ctx.clip();
+        ctx.fillStyle = "#e9d6a8"; ctx.fillRect(0, 0, W, W);
+        const px = p.position.x, pz = p.position.z;
+        const toScr = (x, z) => { const v = rel(x - px, z - pz); return [R + v.r * k, R - v.f * k]; };
+        // jalan utama
+        ctx.strokeStyle = "#c9a96a"; ctx.lineWidth = 8 * k; ctx.lineCap = "butt";
+        [[[-94, 0], [94, 0]], [[0, -100], [0, 94]]].forEach(([a, b]) => { const A = toScr(a[0], a[1]), B = toScr(b[0], b[1]); ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.stroke(); });
+        // alun-alun & masjid
+        let c = toScr(0, 0); ctx.fillStyle = "#7fc8c0"; ctx.beginPath(); ctx.arc(c[0], c[1], 11 * k, 0, Math.PI * 2); ctx.fill();
+        c = toScr(0, -105); ctx.fillStyle = "#D5A94F"; ctx.beginPath(); ctx.arc(c[0], c[1], 9 * k, 0, Math.PI * 2); ctx.fill();
+        // gedung + pintu
+        const passed = CitizenManager.passedSet(activeIdx());
+        ContentManager.listBuildings().filter(b => ContentManager.isBuildingActive(b)).forEach((b, i) => {
+          const s = toScr(b.posX, b.posZ), dr = toScr(b.doorX, b.doorZ);
+          const hex = QBUtil.numToHex(b.color);
+          ctx.save(); ctx.translate(s[0], s[1]);
+          ctx.rotate(Math.atan2(dr[0] - s[0], -(dr[1] - s[1])));
+          ctx.fillStyle = hex; ctx.strokeStyle = "#101D38"; ctx.lineWidth = 2;
+          const h = 8.5 * k; ctx.fillRect(-h, -h, h * 2, h * 2); ctx.strokeRect(-h, -h, h * 2, h * 2);
+          ctx.restore();
+          ctx.fillStyle = "#fff8d6"; ctx.beginPath(); ctx.arc(dr[0], dr[1], Math.max(3, 2.4 * k), 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#fff"; ctx.font = `900 ${Math.max(13, 7 * k)}px system-ui, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(passed.has(b.id) ? "✓" : String(i + 1), s[0], s[1]);
+        });
+        // warga
+        const d = StorageManager.peekData();
+        const helped = new Set(((d.players[activeIdx()] || {}).npcTriviaRewarded) || []);
+        NPC_DATA.forEach(n => {
+          const s = toScr(n.posX, n.posZ);
+          ctx.fillStyle = helped.has(n.id) ? "#94a3b8" : "#F5C542"; ctx.strokeStyle = "#101D38"; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(s[0], s[1], 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        });
+        // tujuan
+        if (t) {
+          const s = toScr(t.x, t.z);
+          const dist = Math.hypot(s[0] - R, s[1] - R);
+          if (dist < R - 12) {
+            const pulse = 8 + (Math.sin(performance.now() / 220) + 1) * 4;
+            ctx.strokeStyle = "#e11d48"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(s[0], s[1], pulse, 0, Math.PI * 2); ctx.stroke();
+          } else {
+            const a = Math.atan2(s[1] - R, s[0] - R), ex = R + Math.cos(a) * (R - 14), ey = R + Math.sin(a) * (R - 14);
+            ctx.save(); ctx.translate(ex, ey); ctx.rotate(a + Math.PI / 2);
+            ctx.fillStyle = "#e11d48"; ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(9, 7); ctx.lineTo(-9, 7); ctx.closePath(); ctx.fill();
+            ctx.restore();
+          }
+        }
+        ctx.restore();
+        // pemain (selalu di tengah, menghadap ke atas = arah kamera)
+        ctx.save(); ctx.translate(R, R);
+        const fy = p.yaw !== undefined ? p.yaw : 0;
+        const fv = rel(Math.sin(fy), Math.cos(fy));
+        ctx.rotate(Math.atan2(fv.r, fv.f));
+        ctx.fillStyle = "#2563eb"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(0, -13); ctx.lineTo(10, 10); ctx.lineTo(0, 5); ctx.lineTo(-10, 10); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.restore();
+        ctx.strokeStyle = "rgba(213,169,79,.9)"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(R, R, R - 2, 0, Math.PI * 2); ctx.stroke();
+      }
+
+      function updateGuide(t) {
+        const g = document.getElementById("qbGuide");
+        if (!g) return;
+        const nameEl = document.getElementById("qbGuideName"), distEl = document.getElementById("qbGuideDist"), arrow = document.getElementById("qbGuideArrow");
+        const p = player();
+        if (!t || !p) {
+          g.classList.toggle("qb-guide-off", true);
+          if (state.mode === "off") { nameEl.textContent = "Penunjuk arah mati"; distEl.textContent = "Ketuk untuk menyalakan"; }
+          else { nameEl.textContent = "Semua gedung tertaklukkan! 🎉"; distEl.textContent = "Buka Grand Finale dari Menu"; }
+          arrow.style.transform = "rotate(0deg)"; arrow.style.opacity = ".35";
+          return;
+        }
+        g.classList.remove("qb-guide-off");
+        const dx = t.x - p.position.x, dz = t.z - p.position.z;
+        const dist = Math.hypot(dx, dz);
+        const v = rel(dx, dz);
+        const deg = Math.atan2(v.r, v.f) * 180 / Math.PI;
+        arrow.style.opacity = "1";
+        arrow.style.transform = `rotate(${deg.toFixed(1)}deg)`;
+        nameEl.textContent = (t.kind === "npc" ? "Warga: " : "") + t.name;
+        const near = dist < (t.kind === "npc" ? 4.5 : 6.5);
+        if (near && !arrived) { arrived = true; try { GameAudio.playCoin(); } catch (e) {} }
+        if (!near) arrived = false;
+        g.classList.toggle("qb-guide-here", near);
+        distEl.textContent = near ? (t.kind === "npc" ? "Sudah dekat — tekan AKSI untuk bicara" : "Kamu di depan pintu — tekan AKSI untuk masuk") : `${Math.round(dist)} m • ${CitizenManager.compass(dx, dz)}`;
+        g.dataset.dist = String(Math.round(dist));
+        g.dataset.deg = String(Math.round(deg));
+      }
+
+      // ---------- suar cahaya 3D ----------
+      function ensureBeacon() {
+        if (beacon) return beacon;
+        try {
+          const scene = World3D.getScene && World3D.getScene();
+          if (!scene || typeof THREE === "undefined") return null;
+          const grp = new THREE.Group();
+          const colMat = new THREE.MeshBasicMaterial({ color: 0xF5C542, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide });
+          const col = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 46, 20, 1, true), colMat);
+          col.position.y = 23;
+          const ringMat = new THREE.MeshBasicMaterial({ color: 0xF5C542, transparent: true, opacity: 0.75, depthWrite: false, side: THREE.DoubleSide });
+          const ring = new THREE.Mesh(new THREE.RingGeometry(2.2, 3.0, 32), ringMat);
+          ring.rotation.x = -Math.PI / 2; ring.position.y = 0.12;
+          const coneMat = new THREE.MeshBasicMaterial({ color: 0xF5C542 });
+          const cone = new THREE.Mesh(new THREE.ConeGeometry(1.3, 2.6, 4), coneMat);
+          cone.rotation.x = Math.PI; cone.position.y = 15;
+          grp.add(col, ring, cone);
+          grp.userData = { col, ring, cone, colMat, ringMat, coneMat };
+          grp.visible = false;
+          scene.add(grp);
+          beacon = grp;
+        } catch (e) { console.warn("Navigator beacon", e); beacon = null; }
+        return beacon;
+      }
+      function updateBeacon(t, show) {
+        const b = ensureBeacon();
+        if (!b) return;
+        b.visible = !!(t && show);
+        if (!b.visible) return;
+        b.position.set(t.x, 0, t.z);
+        const key = t.kind + ":" + t.id;
+        if (key !== lastTargetKey) {
+          lastTargetKey = key;
+          const c = new THREE.Color(t.color || "#F5C542");
+          [b.userData.colMat, b.userData.ringMat, b.userData.coneMat].forEach(m => { try { m.color.copy ? m.color.copy(c) : (m.color = c); } catch (e) {} });
+        }
+        const tt = performance.now() / 1000;
+        b.userData.cone.position.y = 14 + Math.sin(tt * 2.4) * 1.2;
+        b.userData.cone.rotation.y = tt * 1.5;
+        const s = 1 + (Math.sin(tt * 3) + 1) * 0.12;
+        b.userData.ring.scale.set(s, s, s);
+      }
+
+      // ---------- pemilih tujuan ----------
+      function openPicker() {
+        const box = document.getElementById("qbNavPicker");
+        if (!box) return;
+        const p = player();
+        const passed = CitizenManager.passedSet(activeIdx());
+        const cur = current();
+        const rows = ContentManager.listBuildings().filter(b => ContentManager.isBuildingActive(b)).map((b, i) => {
+          const dist = p ? Math.round(Math.hypot(b.doorX - p.position.x, b.doorZ - p.position.z)) : 0;
+          const on = cur && cur.kind === "building" && cur.id === b.id;
+          return `<button type="button" class="qb-nav-row ${on ? "on" : ""}" onclick="QBNavigator.setTarget('building','${esc(b.id)}')">
+            <span class="qb-nav-num" style="background:${QBUtil.numToHex(b.color)}">${passed.has(b.id) ? "✓" : i + 1}</span>
+            <span class="min-w-0 flex-1 text-left"><b>${esc(GameApp.getBuildingDisplayName(b))}</b><small>${esc(b.chapter || "")}${passed.has(b.id) ? " • sudah ditaklukkan" : ""}</small></span>
+            <span class="qb-nav-dist">${dist} m</span></button>`;
+        }).join("");
+        const npc = nearestUnhelpedNpc();
+        box.innerHTML = `
+          <div class="qb-nav-head"><b><i class="fa-solid fa-location-arrow"></i> Mau ke mana?</b><button type="button" onclick="QBNavigator.closePicker()" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button></div>
+          <button type="button" class="qb-nav-row ${state.mode === "auto" ? "on" : ""}" onclick="QBNavigator.setTarget('auto')"><span class="qb-nav-num" style="background:#247B69"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span class="flex-1 text-left"><b>Otomatis</b><small>Gedung berikutnya yang belum ditaklukkan</small></span></button>
+          ${rows}
+          ${npc ? `<button type="button" class="qb-nav-row" onclick="QBNavigator.setTarget('npc','${esc(npc.id)}')"><span class="qb-nav-num" style="background:#ca8a04">!</span><span class="flex-1 text-left"><b>Warga terdekat: ${esc(npc.name)}</b><small>Belum kamu bantu</small></span></button>` : ""}
+          <button type="button" class="qb-nav-row" onclick="QBNavigator.setTarget('off')"><span class="qb-nav-num" style="background:#475569"><i class="fa-solid fa-eye-slash"></i></span><span class="flex-1 text-left"><b>Matikan penunjuk arah</b></span></button>`;
+        box.classList.remove("hidden");
+      }
+      function closePicker() { const box = document.getElementById("qbNavPicker"); if (box) box.classList.add("hidden"); }
+
+      // ---------- peta besar ----------
+      function renderMapNpcs() {
+        const g = document.getElementById("mapNpcMarkers");
+        if (!g || typeof NPC_DATA === "undefined") return;
+        const NS = "http://www.w3.org/2000/svg";
+        while (g.firstChild) g.removeChild(g.firstChild);
+        NPC_DATA.forEach(n => {
+          const grp = document.createElementNS(NS, "g");
+          grp.setAttribute("transform", `translate(${n.posX}, ${n.posZ})`);
+          grp.setAttribute("data-npc-id", n.id);
+          const c = document.createElementNS(NS, "circle");
+          c.setAttribute("r", "2.2"); c.setAttribute("fill", (n.appearance && n.appearance.nameplateColor) || "#D5A94F"); c.setAttribute("stroke", "#ffffff"); c.setAttribute("stroke-width", "0.6");
+          const tx = document.createElementNS(NS, "text");
+          tx.setAttribute("y", "4.5"); tx.setAttribute("fill", "#fde68a"); tx.setAttribute("font-size", "2.4"); tx.setAttribute("font-weight", "bold"); tx.setAttribute("text-anchor", "middle");
+          tx.textContent = String(n.name || "").replace(/^(Ustaz|Ustazah|Syekh|Muadzin|Kurator|Pustakawan|Pedagang|Bu|Pak|Kak|Nenek)\s+/i, "");
+          grp.append(c, tx);
+          g.appendChild(grp);
+        });
+        const sub = document.querySelector("#modalCityMap h3 + p");
+        if (sub) sub.textContent = `Ketuk gedung untuk menjadikannya tujuan • ${ContentManager.listBuildings().length} gedung • ${NPC_DATA.length} warga.`;
+      }
+      function hookMap() {
+        const svg = document.getElementById("svgCityMap");
+        if (!svg || svg.__qbNav) return;
+        svg.__qbNav = true;
+        svg.addEventListener("click", (e) => {
+          const g = e.target.closest && e.target.closest("[data-building-id]");
+          if (!g) return;
+          setTarget("building", g.getAttribute("data-building-id"));
+          try { GameApp.closeCityMap(); } catch (err) {}
+          try { PlatformBoot.systemToast(`<b><i class="fa-solid fa-location-arrow"></i> Tujuan diatur</b><span>Ikuti panah emas dan pilar cahaya.</span>`, 3500); } catch (err) {}
+        });
+        // garis tujuan di peta besar
+        const NS = "http://www.w3.org/2000/svg";
+        const line = document.createElementNS(NS, "line");
+        line.id = "qbMapGuideLine";
+        line.setAttribute("stroke", "#F5C542"); line.setAttribute("stroke-width", "1.6"); line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("opacity", "0");
+        const pg = document.getElementById("mapPlayerGroup");
+        if (pg && pg.parentNode) pg.parentNode.insertBefore(line, pg); else svg.appendChild(line);
+      }
+      function updateMapLine(t) {
+        const line = document.getElementById("qbMapGuideLine");
+        const p = player();
+        if (!line) return;
+        if (!t || !p) { line.setAttribute("opacity", "0"); return; }
+        line.setAttribute("x1", p.position.x.toFixed(1)); line.setAttribute("y1", p.position.z.toFixed(1));
+        line.setAttribute("x2", t.x.toFixed(1)); line.setAttribute("y2", t.z.toFixed(1));
+        line.setAttribute("opacity", "0.9");
+      }
+
+      // ---------- loop ----------
+      function tick(force) {
+        const on = soloActive();
+        const nav = document.getElementById("qbNav");
+        if (nav) nav.classList.toggle("hidden", !on);
+        if (!on) { updateBeacon(null, false); return; }
+        const now = performance.now();
+        if (!force && now - lastDraw < 66) return;   // ±15 fps cukup untuk HUD
+        lastDraw = now;
+        const t = current();
+        drawMini(t);
+        updateGuide(t);
+        updateBeacon(t, true);
+        const map = document.getElementById("modalCityMap");
+        if (map && !map.classList.contains("hidden")) updateMapLine(t);
+      }
+      function loop() { try { tick(false); } catch (e) { console.warn("Navigator", e); } raf = requestAnimationFrame(loop); }
+      function markTouch() {
+        let touch = false;
+        try { touch = (window.matchMedia && matchMedia("(pointer: coarse)").matches) || navigator.maxTouchPoints > 0; } catch (e) {}
+        document.body.classList.toggle("qb-touch", !!touch);
+      }
+      function init() {
+        markTouch();
+        loadState();
+        build();
+        hookMap();
+        renderMapNpcs();
+        try {
+          const om = GameApp.openCityMap;
+          GameApp.openCityMap = function () { const r = om.apply(this, arguments); try { renderMapNpcs(); tick(true); updateMapLine(current()); } catch (e) {} return r; };
+        } catch (e) {}
+        setInterval(layout, 2000);
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(loop);
+      }
+      return { init, tick, current, setTarget, openPicker, closePicker, renderMapNpcs, getState: () => Object.assign({}, state), rel };
+    })();
+    if (typeof window !== "undefined") window.QBNavigator = QBNavigator;
+
+
     const QBv6 = {
       init() {
         BgMusic.init();
         QBControls.init();
         LandingLite.init();
         IntroStory.init();
+        try { CitizenManager.init(); } catch (e) { console.warn("CitizenManager.init", e); }
+        try { QBNavigator.init(); } catch (e) { console.warn("QBNavigator.init", e); }
       }
     };
     if (typeof window !== "undefined") window.QBv6 = QBv6;
