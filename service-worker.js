@@ -7,7 +7,7 @@
  *    disimpan saat pertama kali dimuat online sehingga game tetap bisa dibuka offline.
  *  - API Supabase (/rest/v1, /auth/v1): TIDAK pernah di-cache (selalu jaringan).
  */
-const VERSION = "qurablox-v7-2026-11-16";
+const VERSION = "qurablox-v7-1-2026-11-17";
 const CORE_CACHE = `${VERSION}-core`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const CORE_ASSETS = [

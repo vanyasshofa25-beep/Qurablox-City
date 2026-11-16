@@ -517,6 +517,8 @@
     body.qb-touch #hudInteractionPrompt > div > div:first-child { display: none; }
     body.qb-touch #hudPromptText { white-space: nowrap; font-size: 13px; }
     body.qb-touch #hudPromptSub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52vw; }
+    /* v7.1: joystick bawaan tidak boleh diambil alih browser untuk menggeser halaman (penyebab "macet lepas-lepas") */
+    #mobileJoystickContainer, #mobileJoystickContainer *, #qbJoyZone { touch-action: none !important; }
 
     /* ===================== v6: kontrol HP ===================== */
     #btnMobileJump, #btnMobileAction, #mobileJoystickContainer, .qb-hud-btn, .qb-pause-btn, #gameHudContainer button { touch-action: manipulation; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -16472,7 +16474,7 @@ Silakan berikan perangkat kepada ${p.name}.`);
         st.packSelectId = res.id;
         afterContentChange();
         renderStructureTab();
-        toast(`Paket "${subj}" berhasil dibuat.`);
+        toast(`Paket "${subj}" berhasil dibuat. Setelah materi & soal siap, buka tab Online & Kelas → Terbitkan ke Siswa.`);
       }
 
       function deleteSelectedPack() {
@@ -21281,7 +21283,7 @@ module.exports = QRCode;
         const pack = ContentManager.getActivePack();
         const res = CompletionEngine.saveConfig(pack.id, cfg);
         if (!res.ok) { toast("Gagal menyimpan (penyimpanan penuh?).", "bad"); return res; }
-        toast(`Pengaturan Grand Finale tersimpan sebagai versi ${res.config.version}.`, "ok");
+        toast(`Pengaturan Grand Finale & sertifikat tersimpan (versi ${res.config.version}). Agar sampai ke siswa: tab Online & Kelas → Terbitkan ke Siswa.`, "ok");
         render();
         GrandFinale.refreshHudBadges();
         return res;
@@ -22002,7 +22004,10 @@ module.exports = QRCode;
           <h4 class="font-bold text-white mb-1"><i class="fa-solid fa-paper-plane text-[#F5C542]"></i> Terbitkan Materi &amp; Soal ke Siswa</h4>
           <p class="text-[11px] text-[#D9BE96] mb-2">Ubah materi, bank soal, kunci jawaban, pengaturan ujian, atau syarat Grand Finale di tab-tab Teacher Studio, lalu tekan tombol di bawah. Perangkat siswa memuat versi terbaru saat game dibuka atau saat menekan <b>Main Sekarang</b> (perlu internet sekali). Ujian yang sedang dikerjakan tidak berubah.</p>
           <div class="grid sm:grid-cols-3 gap-2 text-[11px]">
-            <div class="ts-stat"><span>Paket aktif</span><b>${esc(pack.subjectName)} ${esc(pack.gradeLabel)}</b></div>
+            <div class="ts-stat"><span>Paket yang akan diterbitkan</span>
+              <select id="onPubPack" class="ts-input mt-1" style="padding:.3rem .5rem;font-size:11px" onchange="PackSync.choosePack(this.value)">
+                ${ContentManager.listPacks().map(pk => `<option value="${esc(pk.id)}" ${pk.id === pack.id ? "selected" : ""}>${esc(pk.subjectName)}${pk.gradeLabel ? " " + esc(pk.gradeLabel) : ""}</option>`).join("")}
+              </select></div>
             <div class="ts-stat"><span>Versi terbit di Google Sheet</span><b id="onPubRemote">memeriksa…</b></div>
             <div class="ts-stat"><span>Perubahan di perangkat ini</span><b id="onPubPending" style="color:${pending ? "#F5C542" : "#6ee7b7"}">${pending ? "ADA yang belum diterbitkan" : "Sudah sama dengan versi terbit"}</b></div>
           </div>
@@ -22010,6 +22015,7 @@ module.exports = QRCode;
             <label class="ts-label !flex-row items-center gap-2">Kode guru <input id="onPubCode" type="password" class="ts-input w-40" autocomplete="off" placeholder="dari tab Pengaturan"></label>
             <button type="button" id="onPubBtn" class="ts-btn gold" onclick="PackSync.publishFromUi()"><i class="fa-solid fa-paper-plane"></i> Terbitkan ke Siswa</button>
           </div>
+          <p id="onPubWarn" class="hidden mt-2 p-2 rounded-lg text-[11px] font-bold" style="background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.6);color:#fcd34d"></p>
           <p class="text-[10px] text-[#D9BE96] mt-1">Kode guru diisi sendiri di Google Sheet: tab <b>Pengaturan</b>, baris <b>kode_guru</b>, kolom <b>nilai</b> (minimal 6 karakter). Jangan dibagikan ke siswa.</p>`;
         const info = await remoteInfo();
         const el = document.getElementById("onPubRemote");
@@ -22017,6 +22023,30 @@ module.exports = QRCode;
         if (!info || info.error) el.textContent = info && info.error ? "tidak dapat diperiksa: " + info.error : "-";
         else if (!info.version) el.textContent = "belum pernah diterbitkan";
         else el.textContent = `v${info.version} • ${CertificateGenerator.formatDateId(info.published_at)}${info.title ? " • " + info.title : ""}`;
+        // v7.1: beri tahu guru bila siswa masih menerima paket lain
+        const warn = document.getElementById("onPubWarn");
+        if (warn) {
+          let msg = "";
+          if (info && !info.error && !info.version) msg = `⚠️ Belum ada paket yang diterbitkan. Siswa masih memakai paket bawaan. Tekan "Terbitkan ke Siswa" untuk mengirim "${pack.subjectName}".`;
+          else if (info && !info.error && info.pack_id && info.pack_id !== pack.id) msg = `⚠️ Siswa saat ini menerima paket "${info.title || info.pack_id}", BUKAN "${pack.subjectName}${pack.gradeLabel ? " " + pack.gradeLabel : ""}". Tekan "Terbitkan ke Siswa" untuk menggantinya.`;
+          else if (pending) msg = `⚠️ Ada perubahan "${pack.subjectName}" yang belum diterbitkan. Siswa masih menerima versi sebelumnya.`;
+          warn.textContent = msg;
+          warn.classList.toggle("hidden", !msg);
+        }
+      }
+
+      function choosePack(id) {
+        const cur = ContentManager.getActivePack();
+        if (!id || id === cur.id) return false;
+        const target = ContentManager.listPacks().find(x => x.id === id);
+        if (!target) return false;
+        if (!confirm(`Jadikan "${target.subjectName}${target.gradeLabel ? " " + target.gradeLabel : ""}" paket aktif di perangkat ini, agar paket ini yang diterbitkan ke siswa?`)) { renderCard(); return false; }
+        const res = ContentManager.setActivePack(id);
+        if (res && res.success === false) { renderCard(); return false; }
+        try { GameApp.refreshContentEverywhere(); } catch (e) {}
+        try { if (typeof TeacherStudioPro !== "undefined") TeacherStudioPro.toast(`Paket aktif: "${target.subjectName}". Sekarang tekan "Terbitkan ke Siswa".`, "ok"); } catch (e) {}
+        renderCard(); refreshBadge();
+        return true;
       }
 
       async function publishFromUi() {
@@ -22043,7 +22073,7 @@ module.exports = QRCode;
         window.addEventListener("online", () => setTimeout(() => checkForUpdate(), 1500));
       }
 
-      return { start, publish, publishFromUi, checkForUpdate, install, renderCard, refreshBadge, hasUnpublishedChanges, getInstalled, contentHash, remoteInfo, getLastCheck: () => lastCheck };
+      return { start, publish, publishFromUi, checkForUpdate, install, renderCard, refreshBadge, hasUnpublishedChanges, getInstalled, contentHash, remoteInfo, choosePack, getLastCheck: () => lastCheck };
     })();
     if (typeof window !== "undefined") window.PackSync = PackSync;
 
