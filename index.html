@@ -3167,16 +3167,23 @@
         <div class="w-12 h-12 mx-auto rounded-2xl bg-[#247B69]/25 text-[#6ee7b7] flex items-center justify-center text-xl mb-2 shadow">
           <i class="fa-solid fa-book-bookmark"></i>
         </div>
-        <h3 class="font-display text-xl font-bold text-white">Panduan Integrasi Kurikulum Merdeka</h3>
-        <p class="text-xs text-[#D9BE96] mt-1">Al-Qur'an & Ilmu Tajwid Fase D • Kelas IX SMP</p>
+        <h3 class="font-display text-xl font-bold text-white">Panduan Integrasi Kurikulum Nasional</h3>
+        <p class="text-xs text-[#D9BE96] mt-1"><span id="guidanceSubject">Al-Qur'an & Ilmu Tajwid Fase D • Kelas IX SMP</span> • Pendekatan Pembelajaran Mendalam</p>
       </div>
 
       <div class="space-y-4 text-xs text-[#EDE3D0] leading-relaxed max-h-[60vh] overflow-y-auto pr-2">
         <div class="p-3.5 rounded-2xl bg-[#0b1324] border border-[#203858]">
           <h4 class="font-bold text-[#D5A94F] text-sm mb-1.5">1. Capaian Pembelajaran (CP)</h4>
-          <p>
+          <p id="guidanceCpText" style="white-space:pre-line">
             Peserta didik mampu memahami kaidah ilmu tajwid (Alif Lam Ta'rif, Hamzah Washal, Lafdzul Jalalah, Nun Wiqayah, Hukum Ra', Waqaf, dan Gharib), mengidentifikasi contohnya pada ayat Al-Qur'an Juz 30, serta menerapkannya dengan tartil dan benar.
           </p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-[#0b1324] border border-[#203858]">
+          <h4 class="font-bold text-[#f0abfc] text-sm mb-1.5">Prinsip Pembelajaran Mendalam</h4>
+          <p><strong>Berkesadaran:</strong> murid mengetahui tujuan belajar di setiap gedung melalui alur Materi, Latihan Terbimbing, dan Ujian Tantangan, lalu merefleksikan kesalahan lewat pembahasan soal.</p>
+          <p class="mt-1"><strong>Bermakna:</strong> materi dikaitkan dengan contoh nyata dan kehidupan sehari-hari murid.</p>
+          <p class="mt-1"><strong>Menggembirakan:</strong> petualangan kota 3D, misi, XP, koin, dan mode Co-op membuat belajar terasa seperti bermain.</p>
         </div>
 
         <div class="p-3.5 rounded-2xl bg-[#0b1324] border border-[#203858]">
@@ -4755,6 +4762,7 @@
         p.subjectName = String(p.subjectName || "Mata Pelajaran").slice(0, 80);
         p.gradeLabel = String(p.gradeLabel || "").slice(0, 60);
         p.description = String(p.description || "").slice(0, 400);
+        p.cp = String(p.cp || "").slice(0, 2000); // Capaian Pembelajaran per paket (Panduan Kurikulum)
         p.builtIn = p.id === DEFAULT_PACK_ID;
         p.createdAt = p.createdAt || Date.now();
         p.updatedAt = p.updatedAt || Date.now();
@@ -4896,6 +4904,7 @@
           subjectName: pack.subjectName,
           gradeLabel: pack.gradeLabel,
           description: pack.description,
+          cp: pack.cp || "",
           builtIn: pack.id === DEFAULT_PACK_ID,
           version: Number(pack.version) || 1,
           online: pack.online || null
@@ -5050,6 +5059,7 @@
         if (meta.subjectName !== undefined) pack.subjectName = String(meta.subjectName).trim().slice(0, 80) || pack.subjectName;
         if (meta.gradeLabel !== undefined) pack.gradeLabel = String(meta.gradeLabel).trim().slice(0, 60);
         if (meta.description !== undefined) pack.description = String(meta.description).trim().slice(0, 400);
+        if (meta.cp !== undefined) pack.cp = String(meta.cp).trim().slice(0, 2000);
         pack.updatedAt = Date.now();
         StorageManager.setData(data);
         applyActivePack(data);
@@ -13357,7 +13367,22 @@ Silakan berikan perangkat kepada ${p.name}.`);
         document.getElementById("modalSettings").classList.add("hidden");
       }
 
+      const LEGACY_TAJWID_CP = "Peserta didik mampu memahami kaidah ilmu tajwid (Alif Lam Ta'rif, Hamzah Washal, Lafdzul Jalalah, Nun Wiqayah, Hukum Ra', Waqaf, dan Gharib), mengidentifikasi contohnya pada ayat Al-Qur'an Juz 30, serta menerapkannya dengan tartil dan benar.";
       function openTeacherGuidanceModal() {
+        // CP & subjudul mengikuti paket aktif (dapat diubah guru di Teacher Studio > Gedung & Mapel)
+        try {
+          const pack = GAME_DATA.activePack || {};
+          const subj = document.getElementById("guidanceSubject");
+          const cpEl = document.getElementById("guidanceCpText");
+          const full = [pack.subjectName, pack.gradeLabel].filter(Boolean).join(" • ");
+          if (subj && full) subj.textContent = full;
+          if (cpEl) {
+            const cp = String(pack.cp || "").trim();
+            if (cp) cpEl.textContent = cp;
+            else if (pack.builtIn && pack.subjectName === "Ilmu Tajwid") cpEl.textContent = LEGACY_TAJWID_CP;
+            else cpEl.textContent = "Capaian Pembelajaran untuk paket ini belum diisi. Guru dapat mengisinya di Teacher Studio › Gedung & Mapel › Capaian Pembelajaran (CP), lalu klik Simpan Info Paket.";
+          }
+        } catch (e) {}
         document.getElementById("modalTeacherGuidance").classList.remove("hidden");
       }
       function closeTeacherGuidanceModal() {
@@ -16379,6 +16404,7 @@ Silakan berikan perangkat kepada ${p.name}.`);
               <div><label class="ts-label" for="tsPackGrade">Kelas / Jenjang</label><input id="tsPackGrade" class="ts-input" maxlength="60" value="${esc(sel ? sel.gradeLabel : "")}"></div>
             </div>
             <div><label class="ts-label" for="tsPackDesc">Deskripsi Paket</label><input id="tsPackDesc" class="ts-input" maxlength="400" value="${esc(sel ? sel.description : "")}"></div>
+            <div><label class="ts-label" for="tsPackCp">Capaian Pembelajaran (CP) paket ini — tampil di Panduan Kurikulum</label><textarea id="tsPackCp" rows="4" maxlength="2000" class="ts-input" placeholder="Contoh: Peserta didik mampu memahami hukum bacaan Ra' (tafkhim, tarqiq, jawazul wajhain), mengidentifikasi contohnya pada ayat Al-Qur'an, serta menerapkannya dengan tartil.">${esc(sel ? (sel.cp || "") : "")}</textarea></div>
             <div class="ts-row">
               <button type="button" class="ts-btn gold" onclick="TeacherStudioPro.activateSelectedPack()" ${sel && sel.id === activeId ? "disabled" : ""}><i class="fa-solid fa-power-off"></i> Aktifkan Paket Ini</button>
               <button type="button" class="ts-btn" onclick="TeacherStudioPro.savePackMeta()"><i class="fa-solid fa-floppy-disk"></i> Simpan Info Paket</button>
@@ -16444,7 +16470,7 @@ Silakan berikan perangkat kepada ${p.name}.`);
       function savePackMeta() {
         const subj = document.getElementById("tsPackSubject").value.trim();
         if (!subj) { toast("Nama mata pelajaran wajib diisi.", "error"); return; }
-        const res = ContentManager.updatePackMeta(st.packSelectId, { subjectName: subj, gradeLabel: document.getElementById("tsPackGrade").value, description: document.getElementById("tsPackDesc").value });
+        const res = ContentManager.updatePackMeta(st.packSelectId, { subjectName: subj, gradeLabel: document.getElementById("tsPackGrade").value, description: document.getElementById("tsPackDesc").value, cp: (document.getElementById("tsPackCp") || { value: undefined }).value });
         if (!res.success) { toast(res.reason, "error"); return; }
         afterContentChange();
         renderStructureTab();
@@ -21350,7 +21376,8 @@ module.exports = QRCode;
         const d = StorageManager.getData();
         return { subjectName: pack.subjectName, gradeLabel: pack.gradeLabel, description: pack.description, authorName: pack.authorName || "", authorSchool: pack.authorSchool || "",
           quizSettings: d.quizSettings, buildings: QBUtil.deepClone(pack.buildings), completion: CompletionEngine.getConfig(pack.id, d),
-          ...(pack.citizens ? { citizens: QBUtil.deepClone(pack.citizens) } : {}) };
+          ...(pack.citizens ? { citizens: QBUtil.deepClone(pack.citizens) } : {}),
+          ...(pack.cp ? { cp: pack.cp } : {}) };
       }
       async function publishVersion() {
         const d = StorageManager.getData();
@@ -21775,6 +21802,7 @@ module.exports = QRCode;
         const pack = ContentManager.normalizePack({
           id, subjectName: content.subjectName || "Penugasan", gradeLabel: content.gradeLabel || "", description: `Penugasan online: ${r.title || r.package_title}`,
           buildings: content.buildings, version: r.version, authorName: content.authorName || "", authorSchool: content.authorSchool || "",
+          cp: typeof content.cp === "string" ? content.cp : "",
           completion: r.completion_config || content.completion || null,
           online: { assignmentId: r.assignment_id, packageVersionId: r.package_version_id, version: r.version, classId, title: r.title, downloadedAt: new Date().toISOString() }
         }, id);
@@ -21947,6 +21975,7 @@ module.exports = QRCode;
           description: remote.description || prev.description || "", authorName: remote.authorName || "", authorSchool: remote.authorSchool || "",
           buildings: remote.buildings, completion: remote.completion || prev.completion || null,
           citizens: remote.citizens || prev.citizens || null,
+          cp: typeof remote.cp === "string" ? remote.cp : "",
           version, publishedAt, sheetsLive: { version, publishedAt, installedAt: new Date().toISOString() }
         });
         d.platform.packs[id] = ContentManager.normalizePack(merged, id);
